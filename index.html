@@ -3,56 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WorkSphere — Employee Attendance Master</title>
+<title>Leeway PeopleHub — HRMS</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
-    --primary:#e60000;
-    --primary2:#ff3030;
-    --bg:#f5f6f8;
+    --primary:#e31b23;
+    --primary-dark:#b90f16;
+    --bg:#f5f7fb;
     --card:#ffffff;
-    --text:#171717;
-    --muted:#737373;
-    --border:#e5e7eb;
+    --text:#172033;
+    --muted:#70798b;
+    --border:#e7eaf0;
+    --sidebar:#111827;
+    --sidebar-text:#cbd5e1;
     --success:#16a34a;
-    --warning:#d97706;
+    --warning:#f59e0b;
     --danger:#dc2626;
-    --sidebar:#111111;
-    --sidebarText:#eeeeee;
-    --shadow:0 10px 30px rgba(0,0,0,.06);
-}
-
-[data-theme="dark"]{
-    --bg:#0b0d10;
-    --card:#15181d;
-    --text:#f5f5f5;
-    --muted:#9ca3af;
-    --border:#292d34;
-    --sidebar:#050607;
-    --sidebarText:#eeeeee;
-    --shadow:0 10px 30px rgba(0,0,0,.25);
+    --info:#2563eb;
+    --shadow:0 8px 30px rgba(15,23,42,.06);
 }
 
 *{
-    box-sizing:border-box;
     margin:0;
     padding:0;
+    box-sizing:border-box;
 }
 
 body{
-    font-family:Inter,Segoe UI,Arial,sans-serif;
+    font-family:Inter,Arial,sans-serif;
     background:var(--bg);
     color:var(--text);
-    min-height:100vh;
-    transition:.25s;
 }
 
-button,input,select{
-    font:inherit;
+button,input,select,textarea{
+    font-family:inherit;
 }
 
 button{
     cursor:pointer;
+}
+
+.hidden{
+    display:none!important;
 }
 
 /* LOGIN */
@@ -60,285 +58,402 @@ button{
 .login-screen{
     min-height:100vh;
     display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:25px;
     background:
-        radial-gradient(circle at 10% 20%,rgba(230,0,0,.12),transparent 30%),
-        radial-gradient(circle at 90% 80%,rgba(230,0,0,.08),transparent 30%),
-        var(--bg);
+        radial-gradient(circle at 80% 10%,rgba(227,27,35,.18),transparent 30%),
+        linear-gradient(135deg,#101827,#1d293b);
 }
 
-.login-card{
-    width:420px;
-    max-width:100%;
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:24px;
-    padding:38px;
-    box-shadow:var(--shadow);
+.login-left{
+    width:52%;
+    color:#fff;
+    padding:70px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
 }
 
-.logo{
+.brand{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:12px;
     font-weight:800;
-    font-size:23px;
+    font-size:24px;
 }
 
-.logo-mark{
-    width:38px;
-    height:38px;
+.brand-logo{
+    width:45px;
+    height:45px;
     border-radius:12px;
-    background:var(--primary);
-    color:white;
     display:grid;
     place-items:center;
+    background:var(--primary);
+    color:white;
     font-weight:900;
 }
 
-.login-card h1{
+.login-left h1{
+    font-size:48px;
+    line-height:1.1;
+    margin:50px 0 20px;
+    max-width:650px;
+}
+
+.login-left p{
+    color:#cbd5e1;
+    font-size:17px;
+    line-height:1.7;
+    max-width:600px;
+}
+
+.login-features{
+    display:flex;
+    gap:12px;
     margin-top:35px;
-    font-size:29px;
+    flex-wrap:wrap;
 }
 
-.login-card p{
+.login-features span{
+    border:1px solid rgba(255,255,255,.14);
+    padding:10px 14px;
+    border-radius:30px;
+    color:#dbe4f0;
+    font-size:13px;
+}
+
+.login-right{
+    width:48%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+}
+
+.login-card{
+    width:100%;
+    max-width:460px;
+    background:white;
+    padding:38px;
+    border-radius:25px;
+    box-shadow:0 30px 80px rgba(0,0,0,.2);
+}
+
+.login-card h2{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+.login-card .sub{
     color:var(--muted);
-    margin:8px 0 25px;
+    margin-bottom:30px;
 }
 
-.role-selector{
+.role-switch{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:8px;
-    background:var(--bg);
+    background:#f1f3f7;
     padding:5px;
     border-radius:12px;
-    margin-bottom:20px;
+    margin-bottom:25px;
 }
 
-.role-selector button{
+.role-switch button{
     border:0;
     background:transparent;
     padding:11px;
-    border-radius:9px;
+    border-radius:8px;
+    font-weight:600;
     color:var(--muted);
 }
 
-.role-selector button.active{
-    background:var(--card);
+.role-switch button.active{
+    background:white;
     color:var(--primary);
-    font-weight:700;
-    box-shadow:0 2px 8px rgba(0,0,0,.06);
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 .form-group{
-    margin-bottom:16px;
+    margin-bottom:18px;
 }
 
 .form-group label{
     display:block;
     font-size:13px;
     font-weight:600;
-    margin-bottom:7px;
+    margin-bottom:8px;
 }
 
 .form-group input,
-.form-group select{
+.form-group select,
+.form-group textarea{
     width:100%;
     padding:13px 14px;
     border:1px solid var(--border);
     border-radius:10px;
-    background:var(--bg);
-    color:var(--text);
     outline:none;
+    background:#fff;
 }
 
-.form-group input:focus{
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
     border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(227,27,35,.08);
 }
 
-.primary-btn{
+.login-btn{
+    width:100%;
     border:0;
     background:var(--primary);
     color:white;
-    padding:13px 18px;
-    border-radius:10px;
+    padding:14px;
+    border-radius:11px;
     font-weight:700;
-    width:100%;
+    font-size:15px;
 }
 
-.primary-btn:hover{
-    background:var(--primary2);
+.login-btn:hover{
+    background:var(--primary-dark);
+}
+
+.demo{
+    margin-top:18px;
+    background:#fff5f5;
+    padding:13px;
+    border-radius:10px;
+    font-size:12px;
+    color:#7f1d1d;
 }
 
 /* APP */
 
 .app{
-    display:none;
     min-height:100vh;
+    display:flex;
 }
 
 .sidebar{
+    width:255px;
+    background:var(--sidebar);
+    color:white;
     position:fixed;
-    left:0;
     top:0;
     bottom:0;
-    width:245px;
-    background:var(--sidebar);
-    color:var(--sidebarText);
-    padding:22px 14px;
-    z-index:20;
+    left:0;
+    z-index:100;
+    overflow-y:auto;
 }
 
-.sidebar .logo{
-    padding:0 10px 25px;
+.sidebar-brand{
+    padding:22px 20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid rgba(255,255,255,.08);
 }
 
-.nav-section{
-    color:#777;
+.sidebar-brand .brand-logo{
+    width:38px;
+    height:38px;
+    border-radius:9px;
+}
+
+.sidebar-brand div:last-child{
+    font-weight:800;
+}
+
+.sidebar-brand small{
+    display:block;
+    color:#94a3b8;
     font-size:10px;
+    margin-top:2px;
+}
+
+.menu{
+    padding:18px 12px;
+}
+
+.menu-title{
+    color:#64748b;
+    font-size:10px;
+    font-weight:800;
     text-transform:uppercase;
     letter-spacing:1px;
-    padding:15px 12px 8px;
+    padding:12px 10px 8px;
 }
 
-.nav-item{
+.menu-item{
     width:100%;
-    border:0;
-    background:transparent;
-    color:#bbb;
     display:flex;
     align-items:center;
     gap:12px;
-    padding:12px;
-    border-radius:10px;
+    padding:11px 12px;
+    border:0;
+    background:transparent;
+    color:var(--sidebar-text);
+    border-radius:9px;
     text-align:left;
-    margin:3px 0;
+    margin-bottom:3px;
+    font-size:13px;
 }
 
-.nav-item:hover,
-.nav-item.active{
-    background:#252525;
+.menu-item:hover,
+.menu-item.active{
+    background:rgba(255,255,255,.09);
     color:white;
 }
 
-.nav-item.active{
+.menu-item.active{
     border-left:3px solid var(--primary);
 }
 
-.sidebar-bottom{
-    position:absolute;
-    bottom:20px;
-    left:14px;
-    right:14px;
+.menu-icon{
+    width:20px;
+    text-align:center;
 }
 
 .main{
-    margin-left:245px;
-    min-height:100vh;
+    margin-left:255px;
+    width:calc(100% - 255px);
 }
 
 .topbar{
     height:72px;
-    background:var(--card);
+    background:white;
     border-bottom:1px solid var(--border);
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 30px;
+    padding:0 28px;
     position:sticky;
     top:0;
-    z-index:10;
+    z-index:50;
 }
 
 .search{
-    width:330px;
-    max-width:40vw;
-    background:var(--bg);
+    width:320px;
+    position:relative;
+}
+
+.search input{
+    width:100%;
+    padding:11px 15px 11px 40px;
     border:1px solid var(--border);
     border-radius:10px;
-    padding:10px 14px;
-    color:var(--text);
+    background:#f8fafc;
+    outline:none;
+}
+
+.search span{
+    position:absolute;
+    left:14px;
+    top:10px;
 }
 
 .top-actions{
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:16px;
 }
 
 .icon-btn{
     width:38px;
     height:38px;
     border:1px solid var(--border);
-    background:var(--card);
-    color:var(--text);
+    background:white;
     border-radius:10px;
 }
 
 .profile-mini{
     display:flex;
     align-items:center;
-    gap:9px;
-    padding-left:8px;
+    gap:10px;
 }
 
 .avatar{
     width:38px;
     height:38px;
-    border-radius:50%;
-    background:#ddd;
+    background:#fee2e2;
+    color:#991b1b;
     display:grid;
     place-items:center;
+    border-radius:50%;
     font-weight:800;
-    color:#555;
 }
 
-.page{
-    padding:30px;
-    display:none;
-}
-
-.page.active{
+.profile-mini strong{
+    font-size:13px;
     display:block;
 }
 
-.page-heading{
+.profile-mini small{
+    color:var(--muted);
+    font-size:11px;
+}
+
+.content{
+    padding:28px;
+}
+
+.page-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
     margin-bottom:25px;
 }
 
-.page-heading h1{
-    font-size:26px;
+.page-header h1{
+    font-size:25px;
 }
 
-.page-heading p{
+.page-header p{
     color:var(--muted);
     margin-top:5px;
+    font-size:13px;
 }
 
-/* CARDS */
+.btn{
+    border:0;
+    padding:11px 16px;
+    border-radius:9px;
+    font-weight:600;
+    font-size:13px;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-secondary{
+    background:#eef2f7;
+    color:#334155;
+}
+
+.btn-success{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.btn-danger{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* DASHBOARD */
 
 .stats{
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:17px;
-    margin-bottom:22px;
-}
-
-.card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:16px;
-    box-shadow:var(--shadow);
+    gap:18px;
+    margin-bottom:20px;
 }
 
 .stat-card{
+    background:var(--card);
     padding:20px;
+    border-radius:15px;
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
 }
 
 .stat-top{
@@ -352,270 +467,343 @@ button{
     height:42px;
     display:grid;
     place-items:center;
-    border-radius:12px;
-    background:rgba(230,0,0,.1);
+    border-radius:11px;
+    background:#fef2f2;
+    color:var(--primary);
 }
 
-.stat-number{
-    font-size:29px;
-    font-weight:800;
-    margin-top:15px;
+.stat-card h2{
+    font-size:27px;
+    margin:15px 0 4px;
 }
 
-.stat-label{
+.stat-card p{
     color:var(--muted);
-    font-size:13px;
-    margin-top:4px;
+    font-size:12px;
 }
 
-.dashboard-grid{
-    display:grid;
-    grid-template-columns:2fr 1fr;
-    gap:20px;
-}
-
-.card-header{
-    padding:18px 20px;
-    border-bottom:1px solid var(--border);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.card-header h3{
-    font-size:16px;
-}
-
-.card-body{
-    padding:20px;
-}
-
-/* ATTENDANCE */
-
-.attendance-box{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:15px;
-}
-
-.attendance-status{
-    padding:25px;
-    border-radius:15px;
-    background:var(--bg);
-    text-align:center;
-}
-
-.clock{
-    font-size:32px;
-    font-weight:800;
-    margin:12px 0;
-}
-
-.status-dot{
-    display:inline-block;
-    width:9px;
-    height:9px;
-    border-radius:50%;
-    background:var(--success);
-}
-
-.check-btn{
-    border:0;
-    background:var(--primary);
-    color:white;
-    padding:12px 25px;
-    border-radius:9px;
+.growth{
+    color:var(--success);
+    font-size:11px;
     font-weight:700;
 }
 
-.check-btn.checked{
-    background:var(--success);
+.grid-2{
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    gap:20px;
+}
+
+.grid-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:20px;
+    box-shadow:var(--shadow);
+}
+
+.card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.card-header h3{
+    font-size:15px;
+}
+
+.card-header span{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.chart-box{
+    height:280px;
+}
+
+.activity{
+    display:flex;
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.activity-icon{
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    background:#f1f5f9;
+    display:grid;
+    place-items:center;
+}
+
+.activity div:last-child{
+    font-size:12px;
+    line-height:1.5;
+}
+
+.activity small{
+    color:var(--muted);
 }
 
 /* TABLE */
 
 .table-wrap{
-    overflow-x:auto;
+    background:white;
+    border:1px solid var(--border);
+    border-radius:15px;
+    overflow:auto;
+    box-shadow:var(--shadow);
+}
+
+.table-tools{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.table-search{
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    min-width:260px;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-}
-
-th,td{
-    padding:14px 15px;
-    border-bottom:1px solid var(--border);
-    text-align:left;
-    white-space:nowrap;
+    min-width:850px;
 }
 
 th{
-    color:var(--muted);
-    font-size:12px;
+    background:#f8fafc;
+    text-align:left;
+    padding:13px 16px;
+    font-size:11px;
+    color:#64748b;
     text-transform:uppercase;
+    letter-spacing:.4px;
 }
 
 td{
-    font-size:13px;
+    padding:14px 16px;
+    border-top:1px solid #edf0f4;
+    font-size:12px;
+}
+
+.employee{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.employee .avatar{
+    width:34px;
+    height:34px;
+    font-size:11px;
+}
+
+.employee strong{
+    display:block;
+    font-size:12px;
+}
+
+.employee small{
+    color:var(--muted);
 }
 
 .badge{
+    display:inline-flex;
     padding:5px 9px;
     border-radius:20px;
-    font-size:11px;
+    font-size:10px;
     font-weight:700;
 }
 
-.present{
-    color:var(--success);
-    background:rgba(22,163,74,.1);
+.badge.green{
+    background:#dcfce7;
+    color:#166534;
 }
 
-.absent{
-    color:var(--danger);
-    background:rgba(220,38,38,.1);
+.badge.red{
+    background:#fee2e2;
+    color:#991b1b;
 }
 
-.leave{
-    color:var(--warning);
-    background:rgba(217,119,6,.1);
+.badge.yellow{
+    background:#fef3c7;
+    color:#92400e;
 }
 
-/* PROGRESS */
+.badge.blue{
+    background:#dbeafe;
+    color:#1e40af;
+}
 
-.progress{
-    height:8px;
-    background:var(--border);
-    border-radius:20px;
+/* PROFILE */
+
+.profile-cover{
+    height:150px;
+    border-radius:16px 16px 0 0;
+    background:
+        linear-gradient(110deg,#111827,#374151);
+}
+
+.profile-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
     overflow:hidden;
+    box-shadow:var(--shadow);
 }
 
-.progress-bar{
-    height:100%;
-    background:var(--primary);
-    border-radius:20px;
+.profile-info{
+    padding:0 25px 25px;
+    display:flex;
+    align-items:end;
+    gap:20px;
 }
 
-/* EMPLOYEE GRID */
+.profile-big{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:#fee2e2;
+    color:#991b1b;
+    font-size:28px;
+    font-weight:800;
+    border:5px solid white;
+    margin-top:-45px;
+}
 
-.employee-grid{
+.profile-info h2{
+    font-size:22px;
+}
+
+.profile-info p{
+    color:var(--muted);
+    margin-top:5px;
+    font-size:13px;
+}
+
+.info-grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:18px;
+    gap:16px;
 }
 
-.employee-card{
-    padding:20px;
+.info-item{
+    padding:15px;
+    border:1px solid var(--border);
+    border-radius:10px;
 }
 
-.employee-head{
-    display:flex;
-    gap:12px;
-    align-items:center;
-}
-
-.employee-info h3{
-    font-size:15px;
-}
-
-.employee-info p{
+.info-item label{
     color:var(--muted);
-    font-size:12px;
-    margin-top:3px;
-}
-
-.employee-meta{
-    margin-top:18px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-}
-
-.meta-box{
-    background:var(--bg);
-    padding:10px;
-    border-radius:9px;
-}
-
-.meta-box small{
-    color:var(--muted);
-    display:block;
     font-size:10px;
-}
-
-.meta-box strong{
     display:block;
-    margin-top:4px;
+    margin-bottom:6px;
 }
 
-/* CHART */
-
-.chart{
-    height:220px;
-    display:flex;
-    align-items:flex-end;
-    gap:10px;
-    padding-top:20px;
+.info-item strong{
+    font-size:13px;
 }
 
-.bar-wrap{
-    flex:1;
-    height:100%;
+/* CALENDAR */
+
+.calendar{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+}
+
+.day-name,
+.day{
+    background:white;
+    min-height:90px;
+    padding:10px;
+}
+
+.day-name{
+    min-height:auto;
+    text-align:center;
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+}
+
+.day-number{
+    font-size:12px;
+    font-weight:700;
+}
+
+.day.event{
+    background:#fff7f7;
+}
+
+.event-dot{
+    margin-top:10px;
+    padding:4px;
+    border-radius:5px;
+    font-size:9px;
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* APPROVAL */
+
+.approval-card{
     display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
     align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    padding:15px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    margin-bottom:10px;
+}
+
+.approval-actions{
+    display:flex;
     gap:7px;
 }
 
-.bar{
-    width:65%;
-    max-width:35px;
-    background:var(--primary);
-    border-radius:7px 7px 2px 2px;
-    min-height:5px;
-}
+/* NOTIFICATION */
 
-.bar-label{
-    font-size:10px;
-    color:var(--muted);
-}
-
-/* LEAVE */
-
-.leave-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:18px;
-}
-
-.leave-card{
-    padding:20px;
-}
-
-.leave-number{
-    font-size:30px;
-    font-weight:800;
-    margin:10px 0 4px;
-}
-
-/* BUTTON */
-
-.secondary-btn{
+.notification{
+    padding:16px;
     border:1px solid var(--border);
-    background:var(--card);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:9px;
+    border-radius:11px;
+    margin-bottom:10px;
+    display:flex;
+    gap:12px;
 }
 
-.danger-btn{
-    border:0;
-    background:var(--danger);
-    color:white;
-    padding:10px 14px;
-    border-radius:9px;
+.notification.unread{
+    background:#fff8f8;
+    border-left:3px solid var(--primary);
+}
+
+.notification strong{
+    font-size:13px;
+}
+
+.notification p{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:5px;
 }
 
 /* MOBILE */
@@ -624,7 +812,17 @@ td{
     display:none;
 }
 
-@media(max-width:1000px){
+@media(max-width:1100px){
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .grid-2{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:800px){
     .sidebar{
         transform:translateX(-100%);
         transition:.25s;
@@ -636,49 +834,58 @@ td{
 
     .main{
         margin-left:0;
+        width:100%;
     }
 
     .mobile-menu{
         display:block;
     }
 
-    .stats{
-        grid-template-columns:repeat(2,1fr);
-    }
-
-    .employee-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
-
-    .dashboard-grid{
-        grid-template-columns:1fr;
-    }
-}
-
-@media(max-width:650px){
-    .topbar{
-        padding:0 15px;
-    }
-
     .search{
         display:none;
     }
 
-    .page{
-        padding:18px 14px;
+    .login-left{
+        display:none;
     }
 
-    .stats,
-    .employee-grid,
-    .leave-grid,
-    .attendance-box{
+    .login-right{
+        width:100%;
+    }
+
+    .content{
+        padding:18px;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .grid-3{
         grid-template-columns:1fr;
     }
 
-    .page-heading{
+    .info-grid{
+        grid-template-columns:1fr;
+    }
+
+    .page-header{
         align-items:flex-start;
-        gap:15px;
-        flex-direction:column;
+        gap:10px;
+    }
+}
+
+@media(max-width:500px){
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .topbar{
+        padding:0 15px;
+    }
+
+    .profile-mini div{
+        display:none;
     }
 
     .login-card{
@@ -690,347 +897,226 @@ td{
 
 <body>
 
-<!-- LOGIN -->
+<!-- ================= LOGIN ================= -->
 
-<section class="login-screen" id="loginScreen">
+<section id="loginScreen" class="login-screen">
 
-    <div class="login-card">
+    <div class="login-left">
 
-        <div class="logo">
-            <div class="logo-mark">W</div>
-            WorkSphere
+        <div class="brand">
+            <div class="brand-logo">L</div>
+            <div>LEEWAY</div>
         </div>
 
-        <h1>Welcome back</h1>
-        <p>Employee Attendance Master Portal</p>
+        <h1>
+            One workplace.<br>
+            One people platform.
+        </h1>
 
-        <div class="role-selector">
-            <button class="active" onclick="selectRole('employee',this)">
-                Employee
-            </button>
+        <p>
+            Leeway PeopleHub is a modern Human Resource Management
+            platform designed to manage employees, attendance,
+            payroll, performance, leave and workplace operations
+            from one secure enterprise portal.
+        </p>
 
-            <button onclick="selectRole('employer',this)">
-                Employer / Admin
-            </button>
+        <div class="login-features">
+            <span>People Analytics</span>
+            <span>Attendance</span>
+            <span>Payroll</span>
+            <span>Performance</span>
+            <span>Employee Self Service</span>
         </div>
 
-        <form onsubmit="login(event)">
+    </div>
+
+    <div class="login-right">
+
+        <div class="login-card">
+
+            <h2>Welcome back</h2>
+            <p class="sub">Sign in to Leeway PeopleHub</p>
+
+            <div class="role-switch">
+                <button id="employeeRole" class="active"
+                    onclick="setRole('employee')">
+                    Employee
+                </button>
+
+                <button id="adminRole"
+                    onclick="setRole('admin')">
+                    HR / Admin
+                </button>
+            </div>
 
             <div class="form-group">
                 <label>Employee ID / Email</label>
-                <input
-                    type="text"
-                    id="loginId"
-                    placeholder="EMP001"
-                    required
-                >
+                <input id="loginEmail"
+                       type="text"
+                       placeholder="Enter employee ID">
             </div>
 
             <div class="form-group">
                 <label>Password</label>
-                <input
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                >
+                <input id="loginPassword"
+                       type="password"
+                       placeholder="Enter password">
             </div>
 
-            <button class="primary-btn">
-                Sign in
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:12px;">
+                <label>
+                    <input type="checkbox">
+                    Remember me
+                </label>
+
+                <a href="#" style="color:#e31b23">
+                    Forgot password?
+                </a>
+            </div>
+
+            <button class="login-btn" onclick="login()">
+                Sign In
             </button>
 
-        </form>
+            <div class="demo">
+                <b>Demo Login</b><br><br>
 
-        <p style="text-align:center;font-size:12px;margin-top:20px;">
-            Demo portal • Secure enterprise workspace
-        </p>
+                Employee:
+                EMP001 / employee123
+                <br>
+
+                Admin:
+                ADMIN001 / admin123
+            </div>
+
+        </div>
 
     </div>
+
 </section>
 
 
-<!-- APPLICATION -->
+<!-- ================= APP ================= -->
 
-<div class="app" id="app">
+<section id="app" class="app hidden">
 
     <!-- SIDEBAR -->
 
     <aside class="sidebar" id="sidebar">
 
-        <div class="logo">
-            <div class="logo-mark">W</div>
-            WorkSphere
+        <div class="sidebar-brand">
+
+            <div class="brand-logo">L</div>
+
+            <div>
+                LEEWAY
+                <small>PEOPLEHUB HRMS</small>
+            </div>
+
         </div>
 
-        <div class="nav-section">Workspace</div>
+        <div class="menu">
 
-        <button class="nav-item active"
-                data-page="dashboard"
-                onclick="showPage('dashboard',this)">
-            📊 Dashboard
-        </button>
+            <div class="menu-title">Workspace</div>
 
-        <button class="nav-item employee-only"
-                data-page="attendance"
-                onclick="showPage('attendance',this)">
-            🕐 My Attendance
-        </button>
-
-        <button class="nav-item employee-only"
-                data-page="leave"
-                onclick="showPage('leave',this)">
-            📝 Leave
-        </button>
-
-        <button class="nav-item employee-only"
-                data-page="payslips"
-                onclick="showPage('payslips',this)">
-            💳 Payslips
-        </button>
-
-        <button class="nav-item employer-only"
-                data-page="employees"
-                onclick="showPage('employees',this)">
-            👥 Employees
-        </button>
-
-        <button class="nav-item employer-only"
-                data-page="master"
-                onclick="showPage('master',this)">
-            📋 Attendance Master
-        </button>
-
-        <button class="nav-item employer-only"
-                data-page="reports"
-                onclick="showPage('reports',this)">
-            📈 Reports
-        </button>
-
-        <div class="nav-section">Account</div>
-
-        <button class="nav-item"
-                onclick="showPage('profile',this)">
-            👤 Profile
-        </button>
-
-        <button class="nav-item"
-                onclick="showPage('settings',this)">
-            ⚙️ Settings
-        </button>
-
-        <div class="sidebar-bottom">
-
-            <button class="nav-item" onclick="logout()">
-                🚪 Logout
+            <button class="menu-item active"
+                    onclick="showPage('dashboard',this)">
+                <span class="menu-icon">▦</span>
+                Dashboard
             </button>
 
-        </div>
+            <button class="menu-item"
+                    onclick="showPage('profile',this)">
+                <span class="menu-icon">◯</span>
+                My Profile
+            </button>
 
-    </aside>
+            <button class="menu-item"
+                    onclick="showPage('attendance',this)">
+                <span class="menu-icon">◷</span>
+                Attendance
+            </button>
 
+            <button class="menu-item"
+                    onclick="showPage('calendar',this)">
+                <span class="menu-icon">▦</span>
+                Calendar
+            </button>
 
-    <!-- MAIN -->
+            <button class="menu-item"
+                    onclick="showPage('leave',this)">
+                <span class="menu-icon">✓</span>
+                Leave
+            </button>
 
-    <main class="main">
+            <button class="menu-item"
+                    onclick="showPage('payroll',this)">
+                <span class="menu-icon">₹</span>
+                Payroll
+            </button>
 
-        <header class="topbar">
+            <div class="menu-title">Growth</div>
 
-            <div style="display:flex;align-items:center;gap:12px">
+            <button class="menu-item"
+                    onclick="showPage('performance',this)">
+                <span class="menu-icon">↗</span>
+                Performance
+            </button>
 
-                <button class="icon-btn mobile-menu"
-                        onclick="toggleSidebar()">
-                    ☰
+            <button class="menu-item"
+                    onclick="showPage('training',this)">
+                <span class="menu-icon">▤</span>
+                Learning & Training
+            </button>
+
+            <div id="adminMenu">
+
+                <div class="menu-title">Administration</div>
+
+                <button class="menu-item"
+                        onclick="showPage('employees',this)">
+                    <span class="menu-icon">♙</span>
+                    Employees
                 </button>
 
-                <input
-                    class="search"
-                    placeholder="Search employees, reports..."
-                >
-
-            </div>
-
-            <div class="top-actions">
-
-                <button
-                    class="icon-btn"
-                    onclick="toggleTheme()"
-                    title="Toggle theme">
-                    ◐
+                <button class="menu-item"
+                        onclick="showPage('recruitment',this)">
+                    <span class="menu-icon">+</span>
+                    Recruitment
                 </button>
 
-                <button class="icon-btn">
-                    🔔
+                <button class="menu-item"
+                        onclick="showPage('approvals',this)">
+                    <span class="menu-icon">✓</span>
+                    Approvals
                 </button>
 
-                <div class="profile-mini">
-                    <div class="avatar" id="topAvatar">RS</div>
-                    <div>
-                        <strong id="topName">Rahul Sharma</strong>
-                        <div style="font-size:10px;color:var(--muted)"
-                             id="topRole">
-                            Employee
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- DASHBOARD -->
-
-        <section class="page active" id="dashboard">
-
-            <div class="page-heading">
-
-                <div>
-                    <h1 id="welcomeTitle">
-                        Good evening, Rahul 👋
-                    </h1>
-
-                    <p id="dashboardSubtitle">
-                        Here's your attendance overview for today.
-                    </p>
-                </div>
-
-                <button class="secondary-btn">
-                    📅 September 2026
+                <button class="menu-item"
+                        onclick="showPage('reports',this)">
+                    <span class="menu-icon">▥</span>
+                    Reports
                 </button>
 
-            </div>
+                <button class="menu-item"
+                        onclick="showPage('departments',this)">
+                    <span class="menu-icon">⌘</span>
+                    Departments
+                </button>
 
+                <button class="menu-item"
+                        onclick="showPage('shifts',this)">
+                    <span class="menu-icon">◴</span>
+                    Shift Management
+                </button>
 
-            <!-- EMPLOYEE STATS -->
+                <button class="menu-item"
+                        onclick="showPage('announcements',this)">
+                    <span class="menu-icon">!</span>
+                    Announcements
+                </button>
 
-            <div class="stats employee-dashboard">
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Present Days</span>
-                        <div class="stat-icon">✓</div>
-                    </div>
-
-                    <div class="stat-number">21</div>
-                    <div class="stat-label">This month</div>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Working Hours</span>
-                        <div class="stat-icon">⏱</div>
-                    </div>
-
-                    <div class="stat-number">168h</div>
-                    <div class="stat-label">This month</div>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Leave Balance</span>
-                        <div class="stat-icon">🌴</div>
-                    </div>
-
-                    <div class="stat-number">7</div>
-                    <div class="stat-label">Available leaves</div>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Attendance</span>
-                        <div class="stat-icon">%</div>
-                    </div>
-
-                    <div class="stat-number">94%</div>
-                    <div class="stat-label">Monthly score</div>
-                </div>
-
-            </div>
-
-
-            <!-- EMPLOYER STATS -->
-
-            <div class="stats employer-dashboard" style="display:none">
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Total Employees</span>
-                        <div class="stat-icon">👥</div>
-                    </div>
-
-                    <div class="stat-number">486</div>
-                    <div class="stat-label">Active workforce</div>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Present Today</span>
-                        <div class="stat-icon">✓</div>
-                    </div>
-
-                    <div class="stat-number">451</div>
-                    <div class="stat-label">92.8% attendance</div>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>On Leave</span>
-                        <div class="stat-icon">🌴</div>
-                    </div>
-
-                    <div class="stat-number">23</div>
-                    <div class="stat-label">Today</div>
-                </div>
-
-                <div class="card stat-card">
-                    <div class="stat-top">
-                        <span>Late Check-ins</span>
-                        <div class="stat-icon">⚠</div>
-                    </div>
-
-                    <div class="stat-number">12</div>
-                    <div class="stat-label">Requires attention</div>
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-grid">
-
-                <!-- ATTENDANCE -->
-
-                <div class="card employee-dashboard">
-
-                    <div class="card-header">
-                        <h3>Today's Attendance</h3>
-                        <span class="badge present">
-                            ● Live
-                        </span>
-                    </div>
-
-                    <div class="card-body">
-
-                        <div class="attendance-box">
-
-                            <div class="attendance-status">
-
-                                <small style="color:var(--muted)">
-                                    Current time
-                                </small>
-
-                                <div class="clock" id="clock">
-                                    09:42:16 PM
-                                </div>
-
-                                <span class="status-dot"></span>
-                                <span style="font-size:12px">
-                                    Office location verified
-                                </span>
-
-                            </div>
-
-                            <div class="attendance-status">
-
-                                <small style="color:var(--muted)">
-                                    Today's shift
+                <button class="menu-item"
+                        onclick="showPage('audit',this)">
+                    <span class="menu-icon">≡</span>
+                    Audit Logs
                       
