@@ -3,398 +3,560 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Attendance Master | Corporate HR Portal</title>
+<title>WorkSphere — Employee Attendance Master</title>
 
 <style>
 :root{
-    --red:#e30613;
-    --red-dark:#b9000b;
-    --bg:#080a0d;
-    --panel:#11151a;
-    --panel2:#171c22;
-    --border:#262d35;
-    --text:#f5f7fa;
-    --muted:#929aa5;
-    --green:#19c37d;
-    --yellow:#f5b942;
-    --blue:#4c8dff;
-    --danger:#ff4d5f;
-    --shadow:0 15px 45px rgba(0,0,0,.28);
+    --primary:#e60000;
+    --primary2:#ff3030;
+    --bg:#f5f6f8;
+    --card:#ffffff;
+    --text:#171717;
+    --muted:#737373;
+    --border:#e5e7eb;
+    --success:#16a34a;
+    --warning:#d97706;
+    --danger:#dc2626;
+    --sidebar:#111111;
+    --sidebarText:#eeeeee;
+    --shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+[data-theme="dark"]{
+    --bg:#0b0d10;
+    --card:#15181d;
+    --text:#f5f5f5;
+    --muted:#9ca3af;
+    --border:#292d34;
+    --sidebar:#050607;
+    --sidebarText:#eeeeee;
+    --shadow:0 10px 30px rgba(0,0,0,.25);
 }
 
 *{
+    box-sizing:border-box;
     margin:0;
     padding:0;
-    box-sizing:border-box;
-    font-family:Inter,Segoe UI,Arial,sans-serif;
 }
 
 body{
+    font-family:Inter,Segoe UI,Arial,sans-serif;
     background:var(--bg);
     color:var(--text);
     min-height:100vh;
+    transition:.25s;
 }
 
 button,input,select{
     font:inherit;
 }
 
-/* ================= SIDEBAR ================= */
+button{
+    cursor:pointer;
+}
+
+/* LOGIN */
+
+.login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:25px;
+    background:
+        radial-gradient(circle at 10% 20%,rgba(230,0,0,.12),transparent 30%),
+        radial-gradient(circle at 90% 80%,rgba(230,0,0,.08),transparent 30%),
+        var(--bg);
+}
+
+.login-card{
+    width:420px;
+    max-width:100%;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:38px;
+    box-shadow:var(--shadow);
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:23px;
+}
+
+.logo-mark{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    background:var(--primary);
+    color:white;
+    display:grid;
+    place-items:center;
+    font-weight:900;
+}
+
+.login-card h1{
+    margin-top:35px;
+    font-size:29px;
+}
+
+.login-card p{
+    color:var(--muted);
+    margin:8px 0 25px;
+}
+
+.role-selector{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    background:var(--bg);
+    padding:5px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+.role-selector button{
+    border:0;
+    background:transparent;
+    padding:11px;
+    border-radius:9px;
+    color:var(--muted);
+}
+
+.role-selector button.active{
+    background:var(--card);
+    color:var(--primary);
+    font-weight:700;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+
+.form-group{
+    margin-bottom:16px;
+}
+
+.form-group label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:7px;
+}
+
+.form-group input,
+.form-group select{
+    width:100%;
+    padding:13px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:var(--bg);
+    color:var(--text);
+    outline:none;
+}
+
+.form-group input:focus{
+    border-color:var(--primary);
+}
+
+.primary-btn{
+    border:0;
+    background:var(--primary);
+    color:white;
+    padding:13px 18px;
+    border-radius:10px;
+    font-weight:700;
+    width:100%;
+}
+
+.primary-btn:hover{
+    background:var(--primary2);
+}
+
+/* APP */
+
+.app{
+    display:none;
+    min-height:100vh;
+}
 
 .sidebar{
     position:fixed;
     left:0;
     top:0;
     bottom:0;
-    width:255px;
-    background:#0c0f13;
-    border-right:1px solid var(--border);
-    padding:24px 16px;
-    z-index:100;
+    width:245px;
+    background:var(--sidebar);
+    color:var(--sidebarText);
+    padding:22px 14px;
+    z-index:20;
 }
 
-.logo{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:5px 10px 28px;
+.sidebar .logo{
+    padding:0 10px 25px;
 }
 
-.logo-mark{
-    width:42px;
-    height:42px;
-    background:var(--red);
-    border-radius:12px;
-    display:grid;
-    place-items:center;
-    font-weight:900;
-    font-size:19px;
-    box-shadow:0 8px 25px rgba(227,6,19,.25);
-}
-
-.logo-text strong{
-    display:block;
-    font-size:16px;
-}
-
-.logo-text span{
-    color:var(--muted);
-    font-size:11px;
-}
-
-.menu-title{
-    color:#59616c;
+.nav-section{
+    color:#777;
     font-size:10px;
-    font-weight:700;
-    letter-spacing:1.3px;
-    padding:12px 12px 8px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    padding:15px 12px 8px;
 }
 
-.nav{
-    list-style:none;
-}
-
-.nav li{
-    margin:4px 0;
-}
-
-.nav button{
+.nav-item{
     width:100%;
     border:0;
     background:transparent;
-    color:#aeb5be;
-    padding:12px 13px;
-    border-radius:9px;
+    color:#bbb;
     display:flex;
     align-items:center;
     gap:12px;
-    cursor:pointer;
-    text-align:left;
-    transition:.2s;
-}
-
-.nav button:hover{
-    background:#171b20;
-    color:white;
-}
-
-.nav button.active{
-    background:linear-gradient(90deg,rgba(227,6,19,.18),rgba(227,6,19,.04));
-    color:white;
-    border-left:3px solid var(--red);
-}
-
-.nav-icon{
-    width:22px;
-    text-align:center;
-    font-size:16px;
-}
-
-.user-box{
-    position:absolute;
-    left:16px;
-    right:16px;
-    bottom:20px;
-    border:1px solid var(--border);
-    border-radius:12px;
     padding:12px;
-    background:#11151a;
+    border-radius:10px;
+    text-align:left;
+    margin:3px 0;
+}
+
+.nav-item:hover,
+.nav-item.active{
+    background:#252525;
+    color:white;
+}
+
+.nav-item.active{
+    border-left:3px solid var(--primary);
+}
+
+.sidebar-bottom{
+    position:absolute;
+    bottom:20px;
+    left:14px;
+    right:14px;
+}
+
+.main{
+    margin-left:245px;
+    min-height:100vh;
+}
+
+.topbar{
+    height:72px;
+    background:var(--card);
+    border-bottom:1px solid var(--border);
     display:flex;
     align-items:center;
-    gap:10px;
+    justify-content:space-between;
+    padding:0 30px;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+.search{
+    width:330px;
+    max-width:40vw;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 14px;
+    color:var(--text);
+}
+
+.top-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.icon-btn{
+    width:38px;
+    height:38px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    border-radius:10px;
+}
+
+.profile-mini{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding-left:8px;
 }
 
 .avatar{
     width:38px;
     height:38px;
     border-radius:50%;
+    background:#ddd;
     display:grid;
     place-items:center;
-    background:linear-gradient(135deg,#e30613,#7b0008);
     font-weight:800;
+    color:#555;
 }
 
-.user-info{
-    min-width:0;
+.page{
+    padding:30px;
+    display:none;
 }
 
-.user-info strong{
+.page.active{
     display:block;
-    font-size:12px;
 }
 
-.user-info span{
-    color:var(--muted);
-    font-size:10px;
-}
-
-/* ================= MAIN ================= */
-
-.main{
-    margin-left:255px;
-    min-height:100vh;
-}
-
-.topbar{
-    height:72px;
-    border-bottom:1px solid var(--border);
-    background:rgba(8,10,13,.88);
-    backdrop-filter:blur(15px);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 32px;
-    position:sticky;
-    top:0;
-    z-index:50;
-}
-
-.page-title h2{
-    font-size:19px;
-}
-
-.page-title p{
-    font-size:11px;
-    color:var(--muted);
-    margin-top:4px;
-}
-
-.top-actions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.clock{
-    padding:8px 13px;
-    background:#11151a;
-    border:1px solid var(--border);
-    border-radius:8px;
-    font-size:12px;
-    color:#dce1e7;
-}
-
-.icon-btn{
-    width:38px;
-    height:38px;
-    background:#11151a;
-    border:1px solid var(--border);
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-.content{
-    padding:28px 32px 50px;
-}
-
-/* ================= HERO ================= */
-
-.hero{
-    background:
-      radial-gradient(circle at 90% 10%,rgba(227,6,19,.2),transparent 30%),
-      linear-gradient(120deg,#14191f,#0e1115);
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:25px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow:var(--shadow);
-    margin-bottom:22px;
-}
-
-.hero h1{
-    font-size:25px;
-    margin-bottom:7px;
-}
-
-.hero p{
-    color:var(--muted);
-    font-size:12px;
-}
-
-.hero-actions{
-    display:flex;
-    gap:10px;
-}
-
-.btn{
-    border:0;
-    border-radius:8px;
-    padding:11px 16px;
-    cursor:pointer;
-    font-weight:700;
-    font-size:12px;
-    transition:.2s;
-}
-
-.btn:hover{
-    transform:translateY(-1px);
-}
-
-.btn-primary{
-    background:var(--red);
-    color:white;
-}
-
-.btn-primary:hover{
-    background:var(--red-dark);
-}
-
-.btn-secondary{
-    background:#20262e;
-    color:white;
-    border:1px solid #303841;
-}
-
-/* ================= KPI ================= */
-
-.kpi-grid{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:14px;
-    margin-bottom:22px;
-}
-
-.kpi{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:13px;
-    padding:18px;
-    position:relative;
-    overflow:hidden;
-}
-
-.kpi::after{
-    content:"";
-    position:absolute;
-    width:65px;
-    height:65px;
-    border-radius:50%;
-    background:var(--accent);
-    opacity:.06;
-    right:-18px;
-    top:-18px;
-}
-
-.kpi-head{
+.page-heading{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    margin-bottom:25px;
 }
 
-.kpi-icon{
-    width:34px;
-    height:34px;
-    border-radius:8px;
-    display:grid;
-    place-items:center;
-    background:var(--iconbg);
-    color:var(--accent);
+.page-heading h1{
+    font-size:26px;
 }
 
-.kpi small{
-    display:block;
+.page-heading p{
     color:var(--muted);
-    font-size:10px;
-    margin-top:15px;
-}
-
-.kpi strong{
-    display:block;
-    font-size:25px;
     margin-top:5px;
 }
 
-.kpi .trend{
-    font-size:10px;
-    color:var(--green);
-    margin-top:7px;
+/* CARDS */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:17px;
+    margin-bottom:22px;
 }
 
-/* ================= GRID ================= */
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+}
+
+.stat-card{
+    padding:20px;
+}
+
+.stat-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.stat-icon{
+    width:42px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border-radius:12px;
+    background:rgba(230,0,0,.1);
+}
+
+.stat-number{
+    font-size:29px;
+    font-weight:800;
+    margin-top:15px;
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:4px;
+}
 
 .dashboard-grid{
     display:grid;
-    grid-template-columns:1.7fr 1fr;
-    gap:18px;
-    margin-bottom:20px;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
 }
 
-.panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-    overflow:hidden;
-}
-
-.panel-header{
-    padding:17px 19px;
+.card-header{
+    padding:18px 20px;
     border-bottom:1px solid var(--border);
     display:flex;
-    align-items:center;
     justify-content:space-between;
+    align-items:center;
 }
 
-.panel-header h3{
+.card-header h3{
+    font-size:16px;
+}
+
+.card-body{
+    padding:20px;
+}
+
+/* ATTENDANCE */
+
+.attendance-box{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.attendance-status{
+    padding:25px;
+    border-radius:15px;
+    background:var(--bg);
+    text-align:center;
+}
+
+.clock{
+    font-size:32px;
+    font-weight:800;
+    margin:12px 0;
+}
+
+.status-dot{
+    display:inline-block;
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:var(--success);
+}
+
+.check-btn{
+    border:0;
+    background:var(--primary);
+    color:white;
+    padding:12px 25px;
+    border-radius:9px;
+    font-weight:700;
+}
+
+.check-btn.checked{
+    background:var(--success);
+}
+
+/* TABLE */
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:14px 15px;
+    border-bottom:1px solid var(--border);
+    text-align:left;
+    white-space:nowrap;
+}
+
+th{
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+}
+
+td{
     font-size:13px;
 }
 
-.panel-header span{
+.badge{
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+}
+
+.present{
+    color:var(--success);
+    background:rgba(22,163,74,.1);
+}
+
+.absent{
+    color:var(--danger);
+    background:rgba(220,38,38,.1);
+}
+
+.leave{
+    color:var(--warning);
+    background:rgba(217,119,6,.1);
+}
+
+/* PROGRESS */
+
+.progress{
+    height:8px;
+    background:var(--border);
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    background:var(--primary);
+    border-radius:20px;
+}
+
+/* EMPLOYEE GRID */
+
+.employee-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.employee-card{
+    padding:20px;
+}
+
+.employee-head{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+.employee-info h3{
+    font-size:15px;
+}
+
+.employee-info p{
     color:var(--muted);
+    font-size:12px;
+    margin-top:3px;
+}
+
+.employee-meta{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.meta-box{
+    background:var(--bg);
+    padding:10px;
+    border-radius:9px;
+}
+
+.meta-box small{
+    color:var(--muted);
+    display:block;
     font-size:10px;
 }
 
-/* ================= CHART ================= */
+.meta-box strong{
+    display:block;
+    margin-top:4px;
+}
 
-.chart-area{
-    height:250px;
-    padding:20px;
+/* CHART */
+
+.chart{
+    height:220px;
     display:flex;
     align-items:flex-end;
-    gap:14px;
+    gap:10px;
+    padding-top:20px;
 }
 
 .bar-wrap{
@@ -404,393 +566,68 @@ button,input,select{
     flex-direction:column;
     justify-content:flex-end;
     align-items:center;
-    gap:8px;
-}
-
-.bar{
-    width:100%;
-    max-width:30px;
-    background:linear-gradient(180deg,#e30613,#810008);
-    border-radius:5px 5px 2px 2px;
-    min-height:5px;
-    transition:height .8s ease;
-}
-
-.bar-value{
-    font-size:9px;
-    color:#cbd0d6;
-}
-
-.bar-label{
-    color:#707985;
-    font-size:9px;
-}
-
-/* ================= DONUT ================= */
-
-.attendance-summary{
-    padding:20px;
-}
-
-.donut-wrap{
-    display:flex;
-    align-items:center;
-    gap:25px;
-}
-
-.donut{
-    width:145px;
-    height:145px;
-    border-radius:50%;
-    background:conic-gradient(
-        var(--green) 0 82%,
-        var(--yellow) 82% 90%,
-        var(--danger) 90% 96%,
-        #454c55 96% 100%
-    );
-    display:grid;
-    place-items:center;
-    position:relative;
-}
-
-.donut::before{
-    content:"";
-    width:92px;
-    height:92px;
-    background:var(--panel);
-    border-radius:50%;
-    position:absolute;
-}
-
-.donut-center{
-    position:relative;
-    text-align:center;
-}
-
-.donut-center strong{
-    font-size:23px;
-}
-
-.donut-center span{
-    display:block;
-    color:var(--muted);
-    font-size:9px;
-}
-
-.legend{
-    list-style:none;
-    flex:1;
-}
-
-.legend li{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin:11px 0;
-    font-size:10px;
-    color:#b6bdc5;
-}
-
-.legend-label{
-    display:flex;
-    align-items:center;
     gap:7px;
 }
 
-.dot{
-    width:8px;
-    height:8px;
-    border-radius:50%;
+.bar{
+    width:65%;
+    max-width:35px;
+    background:var(--primary);
+    border-radius:7px 7px 2px 2px;
+    min-height:5px;
 }
 
-/* ================= TABLE ================= */
-
-.table-panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-    overflow:hidden;
-}
-
-.table-tools{
-    padding:14px 17px;
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    border-bottom:1px solid var(--border);
-}
-
-.search{
-    position:relative;
-    flex:1;
-    min-width:200px;
-}
-
-.search input{
-    width:100%;
-    background:#0d1014;
-    border:1px solid var(--border);
-    border-radius:8px;
-    color:white;
-    padding:10px 12px 10px 34px;
-    outline:none;
-    font-size:11px;
-}
-
-.search span{
-    position:absolute;
-    left:12px;
-    top:9px;
-    color:#68717c;
-}
-
-select{
-    background:#0d1014;
-    color:#cfd5dc;
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:9px 11px;
-    outline:none;
-    font-size:11px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-thead{
-    background:#0d1014;
-}
-
-th{
-    text-align:left;
-    color:#68717c;
-    font-size:9px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.6px;
-    padding:13px 17px;
-}
-
-td{
-    padding:13px 17px;
-    border-top:1px solid #20262d;
-    font-size:11px;
-    color:#d6dbe0;
-}
-
-tr:hover td{
-    background:#151a20;
-}
-
-.employee{
-    display:flex;
-    align-items:center;
-    gap:9px;
-}
-
-.emp-avatar{
-    width:30px;
-    height:30px;
-    border-radius:7px;
-    background:#222831;
-    display:grid;
-    place-items:center;
-    color:#e8ebef;
-    font-weight:800;
-    font-size:9px;
-}
-
-.employee strong{
-    display:block;
-    font-size:11px;
-}
-
-.employee small{
-    color:#717a85;
-    font-size:9px;
-}
-
-.badge{
-    display:inline-flex;
-    padding:5px 8px;
-    border-radius:20px;
-    font-size:9px;
-    font-weight:700;
-}
-
-.present{
-    color:#36e09a;
-    background:rgba(25,195,125,.09);
-}
-
-.late{
-    color:#ffc85a;
-    background:rgba(245,185,66,.1);
-}
-
-.absent{
-    color:#ff6d7a;
-    background:rgba(255,77,95,.1);
-}
-
-.wfh{
-    color:#71a3ff;
-    background:rgba(76,141,255,.1);
-}
-
-.leave{
-    color:#c79cff;
-    background:rgba(166,108,255,.1);
-}
-
-.punch{
-    background:#20262d;
-    color:#dce1e7;
-    border:1px solid #303841;
-    border-radius:6px;
-    padding:6px 9px;
-    font-size:9px;
-    cursor:pointer;
-}
-
-.punch:hover{
-    background:var(--red);
-    border-color:var(--red);
-}
-
-/* ================= MODAL ================= */
-
-.modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.7);
-    backdrop-filter:blur(5px);
-    display:none;
-    place-items:center;
-    z-index:300;
-}
-
-.modal.show{
-    display:grid;
-}
-
-.modal-box{
-    width:min(450px,92%);
-    background:#12161b;
-    border:1px solid var(--border);
-    border-radius:15px;
-    box-shadow:0 25px 80px rgba(0,0,0,.5);
-    padding:23px;
-}
-
-.modal-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
-}
-
-.modal-head h3{
-    font-size:16px;
-}
-
-.close{
-    border:0;
-    background:transparent;
-    color:#9ba3ad;
-    font-size:22px;
-    cursor:pointer;
-}
-
-.form-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-}
-
-.form-group{
-    margin-bottom:13px;
-}
-
-.form-group.full{
-    grid-column:1/-1;
-}
-
-.form-group label{
-    display:block;
-    color:#929aa5;
+.bar-label{
     font-size:10px;
-    margin-bottom:6px;
+    color:var(--muted);
 }
 
-.form-group input,
-.form-group select{
-    width:100%;
-    padding:10px;
-    background:#0b0e12;
+/* LEAVE */
+
+.leave-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.leave-card{
+    padding:20px;
+}
+
+.leave-number{
+    font-size:30px;
+    font-weight:800;
+    margin:10px 0 4px;
+}
+
+/* BUTTON */
+
+.secondary-btn{
     border:1px solid var(--border);
-    color:white;
-    border-radius:7px;
-    outline:none;
-}
-
-.modal-footer{
-    margin-top:10px;
-    display:flex;
-    justify-content:flex-end;
-    gap:8px;
-}
-
-/* ================= TOAST ================= */
-
-.toast{
-    position:fixed;
-    right:25px;
-    bottom:25px;
-    background:#161b21;
-    border:1px solid #303740;
-    padding:13px 17px;
+    background:var(--card);
+    color:var(--text);
+    padding:10px 14px;
     border-radius:9px;
-    box-shadow:var(--shadow);
-    transform:translateY(100px);
-    opacity:0;
-    transition:.3s;
-    z-index:500;
-    font-size:11px;
 }
 
-.toast.show{
-    transform:translateY(0);
-    opacity:1;
+.danger-btn{
+    border:0;
+    background:var(--danger);
+    color:white;
+    padding:10px 14px;
+    border-radius:9px;
 }
 
-.toast b{
-    color:var(--green);
-}
-
-/* ================= MOBILE ================= */
+/* MOBILE */
 
 .mobile-menu{
     display:none;
 }
 
-@media(max-width:1100px){
-    .kpi-grid{
-        grid-template-columns:repeat(3,1fr);
-    }
-
-    .dashboard-grid{
-        grid-template-columns:1fr;
-    }
-}
-
-@media(max-width:800px){
-
+@media(max-width:1000px){
     .sidebar{
         transform:translateX(-100%);
-        transition:.3s;
+        transition:.25s;
     }
 
     .sidebar.open{
@@ -803,59 +640,49 @@ tr:hover td{
 
     .mobile-menu{
         display:block;
-        background:transparent;
-        color:white;
-        border:0;
-        font-size:20px;
-        margin-right:10px;
     }
 
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .employee-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:650px){
     .topbar{
         padding:0 15px;
     }
 
-    .clock{
+    .search{
         display:none;
     }
 
-    .content{
-        padding:18px 14px 40px;
+    .page{
+        padding:18px 14px;
     }
 
-    .hero{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:18px;
-    }
-
-    .hero-actions{
-        width:100%;
-    }
-
-    .hero-actions button{
-        flex:1;
-    }
-
-    .kpi-grid{
-        grid-template-columns:1fr 1fr;
-    }
-
-    .donut-wrap{
-        flex-direction:column;
-    }
-
-    .table-panel{
-        overflow-x:auto;
-    }
-
-    table{
-        min-width:750px;
-    }
-}
-
-@media(max-width:450px){
-    .kpi-grid{
+    .stats,
+    .employee-grid,
+    .leave-grid,
+    .attendance-box{
         grid-template-columns:1fr;
+    }
+
+    .page-heading{
+        align-items:flex-start;
+        gap:15px;
+        flex-direction:column;
+    }
+
+    .login-card{
+        padding:25px;
     }
 }
 </style>
@@ -863,305 +690,347 @@ tr:hover td{
 
 <body>
 
-<!-- ================= SIDEBAR ================= -->
+<!-- LOGIN -->
 
-<aside class="sidebar" id="sidebar">
+<section class="login-screen" id="loginScreen">
 
-    <div class="logo">
-        <div class="logo-mark">AM</div>
+    <div class="login-card">
 
-        <div class="logo-text">
-            <strong>Attendance Master</strong>
-            <span>Enterprise Workforce</span>
-        </div>
-    </div>
-
-    <div class="menu-title">WORKSPACE</div>
-
-    <ul class="nav">
-
-        <li>
-            <button class="active">
-                <span class="nav-icon">⌂</span>
-                Dashboard
-            </button>
-        </li>
-
-        <li>
-            <button onclick="showToast('Attendance module selected')">
-                <span class="nav-icon">◷</span>
-                Attendance
-            </button>
-        </li>
-
-        <li>
-            <button onclick="showToast('Employee master selected')">
-                <span class="nav-icon">♙</span>
-                Employee Master
-            </button>
-        </li>
-
-        <li>
-            <button onclick="showToast('Leave management selected')">
-                <span class="nav-icon">▣</span>
-                Leave Management
-            </button>
-        </li>
-
-        <li>
-            <button onclick="showToast('Shift management selected')">
-                <span class="nav-icon">◫</span>
-                Shift Management
-            </button>
-        </li>
-
-    </ul>
-
-    <div class="menu-title">ANALYTICS</div>
-
-    <ul class="nav">
-
-        <li>
-            <button onclick="showToast('Reports module selected')">
-                <span class="nav-icon">▥</span>
-                Reports
-            </button>
-        </li>
-
-        <li>
-            <button onclick="showToast('Analytics module selected')">
-                <span class="nav-icon">◈</span>
-                Analytics
-            </button>
-        </li>
-
-    </ul>
-
-    <div class="menu-title">ADMIN</div>
-
-    <ul class="nav">
-
-        <li>
-            <button onclick="showToast('Settings opened')">
-                <span class="nav-icon">⚙</span>
-                Settings
-            </button>
-        </li>
-
-    </ul>
-
-    <div class="user-box">
-        <div class="avatar">AD</div>
-
-        <div class="user-info">
-            <strong>Admin User</strong>
-            <span>HR Operations</span>
-        </div>
-    </div>
-
-</aside>
-
-
-<!-- ================= MAIN ================= -->
-
-<main class="main">
-
-<header class="topbar">
-
-    <div style="display:flex;align-items:center;">
-
-        <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
-
-        <div class="page-title">
-            <h2>Workforce Dashboard</h2>
-            <p>Employee Attendance Management System</p>
+        <div class="logo">
+            <div class="logo-mark">W</div>
+            WorkSphere
         </div>
 
-    </div>
+        <h1>Welcome back</h1>
+        <p>Employee Attendance Master Portal</p>
 
-    <div class="top-actions">
+        <div class="role-selector">
+            <button class="active" onclick="selectRole('employee',this)">
+                Employee
+            </button>
 
-        <div class="clock" id="clock">
-            00:00:00
+            <button onclick="selectRole('employer',this)">
+                Employer / Admin
+            </button>
         </div>
 
-        <button class="icon-btn" onclick="showToast('Notifications checked')">
-            ♢
-        </button>
+        <form onsubmit="login(event)">
 
-        <button class="icon-btn" onclick="showToast('Profile menu')">
-            AD
-        </button>
+            <div class="form-group">
+                <label>Employee ID / Email</label>
+                <input
+                    type="text"
+                    id="loginId"
+                    placeholder="EMP001"
+                    required
+                >
+            </div>
 
-    </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                >
+            </div>
 
-</header>
+            <button class="primary-btn">
+                Sign in
+            </button>
 
+        </form>
 
-<div class="content">
-
-<!-- ================= HERO ================= -->
-
-<section class="hero">
-
-    <div>
-        <h1>Good Evening, Admin 👋</h1>
-        <p id="dateText">Loading today's workforce status...</p>
-    </div>
-
-    <div class="hero-actions">
-
-        <button class="btn btn-secondary"
-                onclick="exportCSV()">
-            ↓ Export CSV
-        </button>
-
-        <button class="btn btn-primary"
-                onclick="openModal()">
-            + Add Employee
-        </button>
+        <p style="text-align:center;font-size:12px;margin-top:20px;">
+            Demo portal • Secure enterprise workspace
+        </p>
 
     </div>
-
 </section>
 
 
-<!-- ================= KPI ================= -->
+<!-- APPLICATION -->
 
-<section class="kpi-grid">
+<div class="app" id="app">
 
-    <div class="kpi"
-         style="--accent:#4c8dff;--iconbg:rgba(76,141,255,.1);">
+    <!-- SIDEBAR -->
 
-        <div class="kpi-head">
-            <span style="color:#929aa5;font-size:10px;">TOTAL EMPLOYEES</span>
-            <div class="kpi-icon">♙</div>
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo">
+            <div class="logo-mark">W</div>
+            WorkSphere
         </div>
 
-        <strong id="totalEmployees">248</strong>
+        <div class="nav-section">Workspace</div>
 
-        <div class="trend">
-            Workforce strength
+        <button class="nav-item active"
+                data-page="dashboard"
+                onclick="showPage('dashboard',this)">
+            📊 Dashboard
+        </button>
+
+        <button class="nav-item employee-only"
+                data-page="attendance"
+                onclick="showPage('attendance',this)">
+            🕐 My Attendance
+        </button>
+
+        <button class="nav-item employee-only"
+                data-page="leave"
+                onclick="showPage('leave',this)">
+            📝 Leave
+        </button>
+
+        <button class="nav-item employee-only"
+                data-page="payslips"
+                onclick="showPage('payslips',this)">
+            💳 Payslips
+        </button>
+
+        <button class="nav-item employer-only"
+                data-page="employees"
+                onclick="showPage('employees',this)">
+            👥 Employees
+        </button>
+
+        <button class="nav-item employer-only"
+                data-page="master"
+                onclick="showPage('master',this)">
+            📋 Attendance Master
+        </button>
+
+        <button class="nav-item employer-only"
+                data-page="reports"
+                onclick="showPage('reports',this)">
+            📈 Reports
+        </button>
+
+        <div class="nav-section">Account</div>
+
+        <button class="nav-item"
+                onclick="showPage('profile',this)">
+            👤 Profile
+        </button>
+
+        <button class="nav-item"
+                onclick="showPage('settings',this)">
+            ⚙️ Settings
+        </button>
+
+        <div class="sidebar-bottom">
+
+            <button class="nav-item" onclick="logout()">
+                🚪 Logout
+            </button>
+
         </div>
 
-    </div>
+    </aside>
 
 
-    <div class="kpi"
-         style="--accent:#19c37d;--iconbg:rgba(25,195,125,.1);">
+    <!-- MAIN -->
 
-        <div class="kpi-head">
-            <span style="color:#929aa5;font-size:10px;">PRESENT</span>
-            <div class="kpi-icon">✓</div>
-        </div>
+    <main class="main">
 
-        <strong id="presentCount">203</strong>
+        <header class="topbar">
 
-        <div class="trend">
-            ↑ 4.8% vs yesterday
-        </div>
+            <div style="display:flex;align-items:center;gap:12px">
 
-    </div>
+                <button class="icon-btn mobile-menu"
+                        onclick="toggleSidebar()">
+                    ☰
+                </button>
 
+                <input
+                    class="search"
+                    placeholder="Search employees, reports..."
+                >
 
-    <div class="kpi"
-         style="--accent:#f5b942;--iconbg:rgba(245,185,66,.1);">
+            </div>
 
-        <div class="kpi-head">
-            <span style="color:#929aa5;font-size:10px;">LATE ARRIVALS</span>
-            <div class="kpi-icon">◷</div>
-        </div>
+            <div class="top-actions">
 
-        <strong id="lateCount">17</strong>
+                <button
+                    class="icon-btn"
+                    onclick="toggleTheme()"
+                    title="Toggle theme">
+                    ◐
+                </button>
 
-        <div class="trend" style="color:#f5b942;">
-            6.8% workforce
-        </div>
+                <button class="icon-btn">
+                    🔔
+                </button>
 
-    </div>
-
-
-    <div class="kpi"
-         style="--accent:#ff4d5f;--iconbg:rgba(255,77,95,.1);">
-
-        <div class="kpi-head">
-            <span style="color:#929aa5;font-size:10px;">ABSENT</span>
-            <div class="kpi-icon">×</div>
-        </div>
-
-        <strong id="absentCount">11</strong>
-
-        <div class="trend" style="color:#ff6d7a;">
-            ↓ 2.1% vs yesterday
-        </div>
-
-    </div>
-
-
-    <div class="kpi"
-         style="--accent:#c28aff;--iconbg:rgba(194,138,255,.1);">
-
-        <div class="kpi-head">
-            <span style="color:#929aa5;font-size:10px;">WFH / LEAVE</span>
-            <div class="kpi-icon">⌂</div>
-        </div>
-
-        <strong id="wfhCount">17</strong>
-
-        <div class="trend" style="color:#b992ff;">
-            Flexible workforce
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- ================= CHARTS ================= -->
-
-<section class="dashboard-grid">
-
-    <div class="panel">
-
-        <div class="panel-header">
-            <h3>Attendance Trend</h3>
-            <span>Last 7 working days</span>
-        </div>
-
-        <div class="chart-area" id="chart"></div>
-
-    </div>
-
-
-    <div class="panel">
-
-        <div class="panel-header">
-            <h3>Today's Attendance</h3>
-            <span>Live status</span>
-        </div>
-
-        <div class="attendance-summary">
-
-            <div class="donut-wrap">
-
-                <div class="donut">
-
-                    <div class="donut-center">
-                        <strong>82%</strong>
-                        <span>Present</span>
+                <div class="profile-mini">
+                    <div class="avatar" id="topAvatar">RS</div>
+                    <div>
+                        <strong id="topName">Rahul Sharma</strong>
+                        <div style="font-size:10px;color:var(--muted)"
+                             id="topRole">
+                            Employee
+                        </div>
                     </div>
-
                 </div>
 
-                <ul class="legend">
+            </div>
 
-                    <li>
-                        <span class="legend-label">
-                            <span class="dot" style="background:#19c37d"></span>
-                            Present
+        </header>
+
+
+        <!-- DASHBOARD -->
+
+        <section class="page active" id="dashboard">
+
+            <div class="page-heading">
+
+                <div>
+                    <h1 id="welcomeTitle">
+                        Good evening, Rahul 👋
+                    </h1>
+
+                    <p id="dashboardSubtitle">
+                        Here's your attendance overview for today.
+                    </p>
+                </div>
+
+                <button class="secondary-btn">
+                    📅 September 2026
+                </button>
+
+            </div>
+
+
+            <!-- EMPLOYEE STATS -->
+
+            <div class="stats employee-dashboard">
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Present Days</span>
+                        <div class="stat-icon">✓</div>
+                    </div>
+
+                    <div class="stat-number">21</div>
+                    <div class="stat-label">This month</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Working Hours</span>
+                        <div class="stat-icon">⏱</div>
+                    </div>
+
+                    <div class="stat-number">168h</div>
+                    <div class="stat-label">This month</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Leave Balance</span>
+                        <div class="stat-icon">🌴</div>
+                    </div>
+
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Available leaves</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Attendance</span>
+                        <div class="stat-icon">%</div>
+                    </div>
+
+                    <div class="stat-number">94%</div>
+                    <div class="stat-label">Monthly score</div>
+                </div>
+
+            </div>
+
+
+            <!-- EMPLOYER STATS -->
+
+            <div class="stats employer-dashboard" style="display:none">
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Total Employees</span>
+                        <div class="stat-icon">👥</div>
+                    </div>
+
+                    <div class="stat-number">486</div>
+                    <div class="stat-label">Active workforce</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Present Today</span>
+                        <div class="stat-icon">✓</div>
+                    </div>
+
+                    <div class="stat-number">451</div>
+                    <div class="stat-label">92.8% attendance</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>On Leave</span>
+                        <div class="stat-icon">🌴</div>
+                    </div>
+
+                    <div class="stat-number">23</div>
+                    <div class="stat-label">Today</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-top">
+                        <span>Late Check-ins</span>
+                        <div class="stat-icon">⚠</div>
+                    </div>
+
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Requires attention</div>
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-grid">
+
+                <!-- ATTENDANCE -->
+
+                <div class="card employee-dashboard">
+
+                    <div class="card-header">
+                        <h3>Today's Attendance</h3>
+                        <span class="badge present">
+                            ● Live
                         </span>
-                        <b>203</b>
-                    </li>
+                    </div>
 
-                    <li>
-     
+                    <div class="card-body">
+
+                        <div class="attendance-box">
+
+                            <div class="attendance-status">
+
+                                <small style="color:var(--muted)">
+                                    Current time
+                                </small>
+
+                                <div class="clock" id="clock">
+                                    09:42:16 PM
+                                </div>
+
+                                <span class="status-dot"></span>
+                                <span style="font-size:12px">
+                                    Office location verified
+                                </span>
+
+                            </div>
+
+                            <div class="attendance-status">
+
+                                <small style="color:var(--muted)">
+                                    Today's shift
+                      
