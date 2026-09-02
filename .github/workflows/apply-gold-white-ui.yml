@@ -1,62 +1,10 @@
 name: Apply Leeway gold-white UI
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  update-ui:
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Apply logo and theme styling
-        shell: python
-        run: |
-          from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-
-          replacements = {
-            '.side{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:#10151d;color:#fff;padding:18px 14px;z-index:20;box-shadow:10px 0 35px #11182714}': '.side{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:linear-gradient(180deg,#fffdf7 0%,#f7f0df 100%);color:#3b2a12;padding:12px 10px;z-index:20;box-shadow:8px 0 30px #8b6a1f22;border-right:1px solid #d6b86a}',
-            '.brandrow{display:flex;align-items:center}': '.brandrow{display:flex;align-items:center;justify-content:center;width:100%;margin:0 0 12px}',
-            '.brandmark{display:inline-grid;place-items:center;width:92px;height:54px;border-radius:10px;background:#fff;margin-right:12px;overflow:hidden;flex:0 0 92px}': '.brandmark{display:grid;place-items:center;width:100%;height:82px;border-radius:12px;background:#fff;border:1px solid #d6b86a;margin:0;overflow:hidden;flex:0 0 100%;box-shadow:0 5px 16px #8b6a1f18}',
-            '.brandmark img{width:100%;height:100%;object-fit:contain;padding:2px}': '.brandmark img{width:100%;height:100%;object-fit:contain;padding:0}',
-            '.nav-label{padding:13px 13px 6px;color:#687384;': '.nav-label{padding:13px 13px 6px;color:#9a7a32;',
-            '.nav button{width:100%;border:0;background:transparent;color:#aeb7c5;': '.nav button{width:100%;border:0;background:transparent;color:#66522e;',
-            '.nav button:hover{background:#ffffff0d;color:#fff;': '.nav button:hover{background:#d6b86a22;color:#3b2a12;',
-            '.nav button.active{background:linear-gradient(90deg,#e60012,#c90010);color:#fff;box-shadow:0 8px 20px #e6001226}': '.nav button.active{background:linear-gradient(90deg,#b88a20,#d6b86a);color:#fff;box-shadow:0 8px 20px #8b6a1f33}',
-            'header{height:72px;background:#fff;border-bottom:1px solid #e6eaf0;': 'header{height:72px;background:#fffdf8;border-bottom:1px solid #e2cf9a;',
-            '.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:#e60012;': '.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:#b88a20;',
-            '.card{background:#fff;border:1px solid #e3e8ef;': '.card{background:#fff;border:1px solid #e6d7ad;',
-            '.kpi:after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;right:-28px;top:-28px;background:#e600120b}': '.kpi:after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;right:-28px;top:-28px;background:#d6b86a22}',
-            '.btn{border:1px solid #dce2ea;background:#fff;color:#172033;': '.btn{border:1px solid #d6c18a;background:#fffdf8;color:#3b2a12;',
-            '.primary{background:#e60012;border-color:#e60012;color:#fff;box-shadow:0 7px 18px #e6001222}': '.primary{background:linear-gradient(90deg,#b88a20,#d6b86a);border-color:#b88a20;color:#fff;box-shadow:0 7px 18px #8b6a1f33}',
-            '.primary:hover{background:#c90010;border-color:#c90010}': '.primary:hover{background:linear-gradient(90deg,#9d7518,#b88a20);border-color:#9d7518}',
-            '.progress i{display:block;height:100%;background:linear-gradient(90deg,#e60012,#ff4a58);': '.progress i{display:block;height:100%;background:linear-gradient(90deg,#b88a20,#e4c66f);',
-            '.login{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 80% 20%,#3b414b 0,#1b212a 32%,#0d1117 70%);padding:20px}': '.login{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 80% 15%,#fffdf6 0,#ead9aa 34%,#8b6a1f 100%);padding:20px}',
-            '.loginbox{width:min(450px,94vw);background:#fff;border-radius:22px;': '.loginbox{width:min(450px,94vw);background:#fffdf8;border-radius:22px;border:1px solid #d6b86a;',
-          }
-          for old, new in replacements.items():
-              if old not in s:
-                  print('MISSING:', old[:100])
-              s = s.replace(old, new)
-
-          mobile_old = '@media(max-width:850px){:root{--sidebar:72px}.side{padding:15px 9px}.logo{font-size:0;text-align:center;padding:8px 0 24px}.logo b{font-size:18px}.brandmark{margin:0}'
-          mobile_new = '@media(max-width:850px){:root{--sidebar:72px}.side{padding:10px 7px}.logo{font-size:0;text-align:center;padding:8px 0 24px}.logo b{font-size:18px}.brandmark{width:58px;height:58px;flex:0 0 58px;margin:0}'
-          s = s.replace(mobile_old, mobile_new)
-
-          p.write_text(s, encoding='utf-8')
-      - name: Commit changes
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --cached --quiet || git commit -m "Refine logo fit and apply gold-white theme"
-          git push
+      - run: echo "Gold-white UI changes are now maintained by the unified UI workflow."
