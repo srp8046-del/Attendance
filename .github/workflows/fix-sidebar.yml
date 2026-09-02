@@ -1,0 +1,37 @@
+name: Fix sidebar layout
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix sidebar and content alignment
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('*{box-sizing:border-box}body{', '*{box-sizing:border-box}:root{--sidebar:252px}body{', 1)
+          s = s.replace('.side{position:fixed;inset:0 auto 0 0;width:252px;', '.side{position:fixed;inset:0 auto 0 0;width:var(--sidebar);', 1)
+          s = s.replace('.main{margin-left:252px;width:calc(100% - 252px);', '.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));', 1)
+          s = s.replace('@media(max-width:850px){.side{width:72px;', '@media(max-width:850px){:root{--sidebar:72px}.side{', 1)
+          s = s.replace('.main{margin-left:72px;width:calc(100% - 72px)}', '.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar))}', 1)
+          p.write_text(s, encoding='utf-8')
+
+      - name: Commit layout fix and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/fix-sidebar.yml
+          git add index.html .github/workflows/fix-sidebar.yml
+          git commit -m "Fix sidebar content overlap [skip ci]" || exit 0
+          git push
