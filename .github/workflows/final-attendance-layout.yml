@@ -21,6 +21,7 @@ jobs:
         run: |
           python tools/final_attendance_layout.py
           python tools/date_fix.py
+          python tools/dashboard_date_fix.py
       - name: Commit final fixes
         run: |
           git config user.name "github-actions[bot]"
@@ -29,6 +30,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Final attendance fixes already applied"
           else
-            git commit -m "Fix final attendance layout and timezone dates"
+            git commit -m "Add dashboard attendance date filter"
             git push
           fi
