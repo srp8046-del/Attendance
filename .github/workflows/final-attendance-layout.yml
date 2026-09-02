@@ -13,16 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply final attendance layout
-        run: python tools/final_attendance_layout.py
-      - name: Commit layout
+      - name: Apply complete UI and BIO fixes
+        run: |
+          python tools/fix_ui.py
+          python tools/fix_bio.py
+      - name: Apply final attendance layout and date fix
+        run: |
+          python tools/final_attendance_layout.py
+          python tools/date_fix.py
+      - name: Commit final fixes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then
-            echo "Final attendance layout already applied"
+            echo "Final attendance fixes already applied"
           else
-            git commit -m "Set final attendance agent columns and shortcuts"
+            git commit -m "Fix final attendance layout and timezone dates"
             git push
           fi
