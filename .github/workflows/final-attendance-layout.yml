@@ -22,6 +22,7 @@ jobs:
           python tools/final_attendance_layout.py
           python tools/date_fix.py
           python tools/dashboard_date_fix.py
+          python tools/fix_status_shortcodes.py
       - name: Commit final fixes
         run: |
           git config user.name "github-actions[bot]"
@@ -30,6 +31,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Final attendance fixes already applied"
           else
-            git commit -m "Add dashboard attendance date filter"
+            git commit -m "Apply attendance status shortcuts everywhere"
             git push
           fi
