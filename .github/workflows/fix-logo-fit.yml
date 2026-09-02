@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   fix-ui:
-    if: ${{ !contains(github.event.head_commit.message, 'Finalize portal UI') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,16 +23,17 @@ jobs:
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
 
-          # Repair malformed XLSX script markup that prevented reliable theme bootstrapping.
-          s=re.sub(r'<script src="https://cdn\\.jsdelivr\\.net/npm/xlsx@0\\.18\\.5/dist/xlsx\\.full\\.min\\.js"><script>.*?</script>\\s*</script>', '<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>', s, flags=re.S)
-          s=re.sub(r'<script>if\\(localStorage\\.getItem\("leeway-theme"\).*?</script>', '', s, flags=re.S)
+          # Repair malformed XLSX script markup and remove old theme bootstrap snippets.
+          s=re.sub(r'<script src="https://cdn\.jsdelivr\.net/npm/xlsx@0\.18\.5/dist/xlsx\.full\.min\.js"><script>.*?</script>\s*</script>', '<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>', s, flags=re.S)
+          s=re.sub(r'<script>if\(localStorage\.getItem\("leeway-theme"\).*?</script>', '', s, flags=re.S)
 
-          # Remove generated theme/logo blocks so there is one authoritative final layer.
-          s=re.sub(r'\\n?/\\* LEEWAY_COMPLETE_THEME_V1 \\*/.*?(?=</style>)','',s,flags=re.S)
-          s=re.sub(r'\\n?/\\* LEEWAY_COMPLETE_THEME_V2 \\*/.*?(?=</style>)','',s,flags=re.S)
-          s=re.sub(r'\\n?/\\* LEEWAY_LOGO_FIT_V2 \\*/.*?(?=</style>)','',s,flags=re.S)
+          # Remove generated theme/logo blocks so this remains deterministic.
+          s=re.sub(r'\n?/\* LEEWAY_COMPLETE_THEME_V1 \*/.*?(?=</style>)','',s,flags=re.S)
+          s=re.sub(r'\n?/\* LEEWAY_COMPLETE_THEME_V2 \*/.*?(?=</style>)','',s,flags=re.S)
+          s=re.sub(r'\n?/\* LEEWAY_FINAL_UI \*/.*?(?=</style>)','',s,flags=re.S)
+          s=re.sub(r'\n?/\* LEEWAY_LOGO_FIT_V2 \*/.*?(?=</style>)','',s,flags=re.S)
 
-          # Remove remaining red accents from the brand UI.
+          # Remove remaining red accents from the gold brand UI.
           s=s.replace('.logo b{color:#ff2638}','.logo b{color:#b88a20}')
           s=s.replace('.drop:hover{border-color:#e60012;background:#fff8f8}','.drop:hover{border-color:#b88a20;background:#fffdf5}')
           s=s.replace('border-color:#e60012;box-shadow:0 0 0 3px #e6001212','border-color:#b88a20;box-shadow:0 0 0 3px #d6b86a22')
