@@ -13,17 +13,11 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          bad_start='function attendanceDateKey(d){n'
-          if bad_start in s:
-              start=s.index(bad_start)
-              marker="return '';n"
-              end=s.rfind(marker,start)
-              if end < 0:
-                  raise SystemExit('Malformed date helper found but final return marker was not found')
-              end += len(marker)
-              good="""function attendanceDateKey(d){
+          pattern=r'\\\\?n?\\nfunction attendanceDateKey\\(d\\)\\{n.*?return \'\';n\\}n</script>'
+          good="""function attendanceDateKey(d){
             if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
             return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
           }
@@ -46,14 +40,15 @@ jobs:
             m=t.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})$/);
             if(m) return attendanceDateFromYMD(m[3],Number(m[2])-1,m[1]);
             return '';
-          }"""
-              s=s[:start]+good+s[end:]
-              p.write_text(s,encoding='utf-8')
-              print('Malformed date helper repaired.')
-          else:
-              print('Date helper already valid; no repair needed.')
+          }</script>"""
+          m=re.search(pattern,s,flags=re.S)
+          if not m:
+              raise SystemExit('Malformed date helper block not found')
+          s=s[:m.start()]+good+s[m.end():]
+          p.write_text(s,encoding='utf-8')
+          print('Malformed date helper repaired.')
           PY
-      - name: Validate JavaScript
+      - name: Validate all embedded JavaScript
         run: |
           python - <<'PY'
           from pathlib import Path
