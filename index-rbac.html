@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leeway International | Attendance Master — RBAC</title>
+<style>html,body{margin:0;padding:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f6f9}#boot{min-height:100vh;display:grid;place-items:center;color:#3b2a12}#boot div{background:#fff;padding:24px 28px;border-radius:16px;box-shadow:0 15px 50px #0001;border:1px solid #d6b86a}</style>
+</head>
+<body><div id="boot"><div>Loading Attendance Master…</div></div>
+<script>
+(async function(){
+  const SOURCE='index.html';
+  const SUPABASE_URL='https://slsiwqvbdcdcgrkufsln.supabase.co';
+  const SUPABASE_KEY='sb_publishable_dtWiemrqMQHEXN5SGLGnPw_VGs-ottO';
+  try{
+    const res=await fetch(SOURCE,{cache:'no-store'});
+    if(!res.ok) throw new Error('Could not load the main attendance application ('+res.status+').');
+    let html=await res.text();
+    html=html.replace('</head>',`<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script></head>`);
+    html=html.replace('</body>',`<script>
+(function(){
+  'use strict';
+  const SB_URL=${JSON.stringify(SUPABASE_URL)},SB_KEY=${JSON.stringify(SUPABASE_KEY)};
+  let sb=null,profile=null,allRecords=null,allMaster=null;
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const byId=id=>document.getElementById(id);
+  const msg=t=>{const e=byId('loginErr');if(e)e.textContent=t||'';};
+  const usernameEmail=u=>String(u||'').trim().toLowerCase()+'@login.leeway.local';
+  function role(){return String(profile?.role||'viewer').toLowerCase();}
+  function canAll(){return !!profile&&(profile.can_view_all===true||role()==='admin'||role()==='viewer'||role()==='uploader');}
+  function canUpload(){return !!profile&&(profile.can_upload===true||role()==='admin'||role()==='uploader');}
+  function norm(v){return String(v??'').trim().toUpperCase().replace(/\\s+/g,'');}
+  function ownEmployeeCodes(){const a=new Set();if(profile?.employee_code)a.add(norm(profile.employee_code));return a;}
+  function managerCodes(){const target=norm(profile?.employee_code);const out=new Set();if(target)out.add(target);const master=Array.isArray(window.state?.master)?window.state.master:[];for(const e of master){const m=String(e?.['MANAGER EMPLOYEE CODE']??e?.['MANAGER ID']??e?.['SUPERVISOR EMPLOYEE CODE']??e?.['SUPERVISOR ID']??'').trim();if(m&&norm(m)===target){const c=e?.['EMPLOYEE CODE']??e?.['EMPLOYEE ID'];if(c)out.add(norm(c));}}return out;}
+  function recordAllowed(r){if(canAll())return true;const c=norm(r?.code),own=ownEmployeeCodes();if(role()==='manager'){return managerCodes().has(c);}return own.has(c);}
+  function masterAllowed(e){if(canAll())return true;const c=norm(e?.['EMPLOYEE CODE']??e?.['EMPLOYEE ID']);if(role()==='manager')return managerCodes().has(c);return ownEmployeeCodes().has(c);}
+  function applyView(){
+    if(!window.state)return;
+    if(allRecords===null)allRecords=Array.isArray(state.records)?state.records.slice():[];
+    if(allMaster===null)allMaster=Array.isArray(state.master)?state.master.slice():[];
+    state.records=allRecords.filter(recordAllowed);
+    state.master=allMaster.filter(masterAllowed);
+  }
+  function restoreForRebuild(){if(window.state){if(allRecords!==null)state.records=allRecords.slice();if(allMaster!==null)state.master=allMaster.slice();}}
+  function captureAfterRebuild(){if(window.state){allRecords=Array.isArray(state.records)?state.records.slice():[];allMaster=Array.isArray(state.master)?state.master.slice():[];applyView();}}
+  function patchUI(){
+    const uploadBtns=[...document.querySelectorAll('.nav button')].filter(b=>/Data Upload/i.test(b.textContent));
+    uploadBtns.forEach(b=>b.style.display=canUpload()?'':'none');
+    document.querySelectorAll('button').forEach(b=>{if(/Upload data/i.test(b.textContent))b.style.display=canUpload()?'':'none';});
+    const h=document.querySelector('header div');
+    if(h&&!byId('rbacBadge')){const x=document.createElement('span');x.id='rbacBadge';x.style.cssText='display:inline-block;margin-right:10px;padding:7px 10px;border-radius:999px;background:#fff4d6;border:1px solid #d6b86a;color:#6b511e;font-size:11px;font-weight:800';x.textContent=(profile?.display_name||profile?.username||'User')+' · '+(profile?.designation||role());h.prepend(x);}
+    const dash=document.querySelector('#dashboard h2');if(dash)dash.textContent='Welcome, '+(profile?.display_name||profile?.username||'User');
+    const sub=document.querySelector('#dashboard .hero p');if(sub)sub.textContent=canAll()?'Attendance Master Control Centre':'Personal Attendance View';
+  }
+  async function loadProfile(){
+    const {data:{user},error:ue}=await sb.auth.getUser();
+    if(ue||!user)throw new Error('Session expired. Please sign in again.');
+    const {data,error}=await sb.from('user_profiles').select('*').eq('id',user.id).maybeSingle();
+    if(error)throw error;if(!data||data.active!==true)throw new Error('Your account is inactive or not provisioned.');
+    profile=data;
+  }
+  async function signIn(){
+    const u=byId('user'),p=byId('pass');const username=u?.value.trim(),password=p?.value||'';
+    if(!username||!password){msg('Enter username and password.');return false;}
+    msg('Signing in…');
+    try{
+      if(!sb)sb=window.supabase.createClient(SB_URL,SB_KEY);
+      const {error}=await sb.auth.signInWithPassword({email:usernameEmail(username),password});
+      if(error)throw error;
+      await loadProfile();
+      sessionStorage.setItem('lw_auth','1');sessionStorage.setItem('lw_user',username);
+      document.getElementById('login')?.classList.add('hidden');document.getElementById('app')?.classList.remove('hidden');
+      patchUI();
+      if(window.renderEmployees)window.renderEmployees();if(window.renderTable)window.renderTable();if(window.renderFinal)window.renderFinal();if(window.updateKPIs)window.updateKPIs();
+      msg('');
+    }catch(e){console.error(e);msg(e?.message||'Invalid username or password.');}
+    return false;
+  }
+  async function signOut(){try{if(sb)await sb.auth.signOut();}catch(e){}sessionStorage.removeItem('lw_auth');sessionStorage.removeItem('lw_user');location.reload();}
+  function install(){
+    if(!window.supabase){setTimeout(install,50);return;}
+    sb=window.supabase.createClient(SB_URL,SB_KEY);
+    window.login=signIn;window.logout=signOut;
+    const btn=document.querySelector('#login .btn.primary');if(btn)btn.onclick=signIn;
+    ['user','pass'].forEach(id=>byId(id)?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();signIn();}}));
+    const originalRebuild=window.rebuild;
+    if(originalRebuild){window.rebuild=function(){restoreForRebuild();const x=originalRebuild.apply(this,arguments);captureAfterRebuild();patchUI();return x;};}
+    const originalClear=window.clearData;if(originalClear)window.clearData=function(){allRecords=[];allMaster=[];return originalClear.apply(this,arguments);};
+    window.rbac={getProfile:()=>profile,canUpload,canViewAll:canAll,applyView};
+    (async()=>{try{const {data:{session}}=await sb.auth.getSession();if(session){await loadProfile();sessionStorage.setItem('lw_auth','1');sessionStorage.setItem('lw_user',profile.username);document.getElementById('login')?.classList.add('hidden');document.getElementById('app')?.classList.remove('hidden');patchUI();if(window.updateKPIs)window.updateKPIs();}}catch(e){console.warn(e);}})();
+  }
+  install();
+})();
+<\/script></body>`);
+    document.open();document.write(html);document.close();
+  }catch(e){document.getElementById('boot').innerHTML='<div><b>Attendance Master could not start.</b><br><small>'+String(e.message||e)+'</small></div>';}
+})();
+</script>
+</body></html>
