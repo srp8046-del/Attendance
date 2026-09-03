@@ -1,0 +1,32 @@
+name: Rename Employee ID Labels
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  rename:
+    if: ${{ !contains(github.event.head_commit.message, 'Rename Employee ID labels') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update labels and Employee Master ID mapping labels
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('BIO Employee ID', 'Employee ID')
+          s = s.replace('TOS Agent ID', 'OLM ID')
+          s = s.replace('BIO ID', 'Employee ID')
+          s = s.replace('TOS ID', 'OLM ID')
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Rename Employee ID labels'
+          git push
