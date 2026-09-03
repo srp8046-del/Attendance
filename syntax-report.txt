@@ -1,5 +1,0 @@
-SCRIPT 1: OK
-
-SCRIPT 2: OK
-
-SCRIPT 3: OK
