@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     if (!/^[a-z0-9._-]{3,40}$/.test(username)) throw new Error('Username must be 3-40 characters: letters, numbers, dot, underscore or hyphen.');
     if (password.length < 8) throw new Error('Password must be at least 8 characters.');
-    if (!['admin','manager','tele_sales_executive','viewer','uploader'].includes(role)) throw new Error('Invalid role');
+    if (!['admin','manager','team_leader','tele_sales_executive','viewer','uploader'].includes(role)) throw new Error('Invalid role');
     if (!display_name) throw new Error('Display name is required');
 
     const email = `${username}@login.leeway.local`;
