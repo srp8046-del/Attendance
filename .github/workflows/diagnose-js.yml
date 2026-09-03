@@ -1,0 +1,35 @@
+name: Diagnose attendance JavaScript
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check embedded JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,flags=re.S|re.I)
+          report=[]
+          for i,code in enumerate(scripts,1):
+              p=Path(f'/tmp/script{i}.js'); p.write_text(code,encoding='utf-8')
+              r=subprocess.run(['node','--check',str(p)],text=True,capture_output=True)
+              report.append(f'SCRIPT {i}: '+('OK' if r.returncode==0 else 'ERROR\n'+r.stderr))
+          Path('syntax-report.txt').write_text('\n\n'.join(report),encoding='utf-8')
+          print(Path('syntax-report.txt').read_text())
+          PY
+      - name: Commit diagnostic report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add syntax-report.txt
+          git diff --cached --quiet && exit 0
+          git commit -m 'Add attendance JS syntax diagnostic'
+          git push
