@@ -9,20 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repair malformed date helper
+      - name: Repair malformed date helper and escape
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
           bad_start='function attendanceDateKey(d){n'
-          if bad_start not in s:
-              print('Date helper already repaired; nothing to do.')
-          else:
+          if bad_start in s:
               start=s.index(bad_start)
-              if start>=2 and s[start-2:start]=='\\\n':
-                  s=s[:start-2]+s[start:]
-                  start=s.index(bad_start)
+              # Remove the stray backslash + newline immediately before the helper.
+              prefix=s[:start]
+              while prefix.endswith('\\') or prefix.endswith('\n') or prefix.endswith('\r'):
+                  prefix=prefix[:-1]
+              s=prefix+s[start:]
+              start=s.index(bad_start)
               end=s.index('</script>',start)
               good="""function attendanceDateKey(d){
             if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
@@ -51,7 +52,9 @@ jobs:
           """
               s=s[:start]+good+s[end:]
               p.write_text(s,encoding='utf-8')
-              print('Malformed date helper repaired.')
+              print('Malformed date helper and stray escape repaired.')
+          else:
+              print('Malformed helper not present; continuing validation.')
           PY
       - name: Validate all embedded JavaScript
         run: |
@@ -68,7 +71,7 @@ jobs:
           if errors: raise SystemExit('\n'.join(errors))
           print(f'Validated {len(scripts)} embedded scripts: all OK')
           PY
-      - name: Remove temporary diagnostics and repair workflow
+      - name: Commit repaired index and clean diagnostics
         run: |
           rm -f syntax-report.txt .github/workflows/diagnose-js.yml .github/workflows/repair-attendance-js.yml
           git config user.name 'github-actions[bot]'
