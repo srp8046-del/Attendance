@@ -13,21 +13,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Normalize attendance helper JavaScript
+      - name: Rebuild attendance date helper cleanly
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          start=s.find('function attendanceDateKey(d)')
+          marker='updateKPIs();updateFileState();'
+          start=s.find(marker)
           end=s.find('</script>', start)
           if start < 0 or end < 0:
-              raise SystemExit('Attendance helper block not found')
-          block=s[start:end]
-          block=block.replace('\\','')
-          s=s[:start]+block+s[end:]
+              raise SystemExit('Login script markers not found')
+          clean = marker + '''
+          function attendanceDateKey(d){
+            if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
+            return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          }
+          function attendanceDateFromYMD(y,m,d){
+            y=Number(y); m=Number(m); d=Number(d);
+            if(!Number.isInteger(y)||!Number.isInteger(m)||!Number.isInteger(d)||m<0||m>11||d<1) return '';
+            const x=new Date(y,m,d);
+            if(x.getFullYear()!==y || x.getMonth()!==m || x.getDate()!==d) return '';
+            return attendanceDateKey(x);
+          }
+          function attendanceDateOnly(v){
+            if(v instanceof Date) return attendanceDateKey(v);
+            if(typeof v==='number' && window.XLSX && XLSX.SSF){
+              const x=XLSX.SSF.parse_date_code(v);
+              if(x && x.y && x.m && x.d) return attendanceDateFromYMD(x.y,x.m-1,x.d);
+            }
+            const t=String(v??'').trim();
+            let m=t.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+            if(m) return attendanceDateFromYMD(m[1],Number(m[2])-1,m[3]);
+            m=t.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})$/);
+            if(m) return attendanceDateFromYMD(m[3],Number(m[2])-1,m[1]);
+            return '';
+          }
+          '''.replace('          ','',1).replace('\n          ','\n')
+          s=s[:start]+clean+'\n'+s[end:]
           p.write_text(s,encoding='utf-8')
           PY
+      - name: Validate JavaScript syntax
+        run: |
+          node --check <(python -c "from pathlib import Path; import re; s=Path('index.html').read_text(); print(re.search(r'<script>([\\s\\S]*?)</script>',s).group(1))")
       - name: Commit repair
         run: |
           git config user.name "github-actions[bot]"
@@ -36,6 +64,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No repair needed"
           else
-            git commit -m "Normalize login JavaScript syntax"
+            git commit -m "Fix login JavaScript syntax"
             git push
           fi
