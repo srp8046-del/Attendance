@@ -1,0 +1,46 @@
+name: Fix BIO time and date parsing
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-bio-time-date.yml'
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch BIO time and date parser
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          old_fmt=re.search(r'function fmtClock\(v\)\{.*?\}', s)
+          new_fmt="""function fmtClock(v){if(v==null||v==='')return'';const s=String(v).trim().toUpperCase();const m=s.match(/^(\\d{1,2}):(\\d{2})(?::(\\d{2}))?\\s*(AM|PM)?$/);if(!m)return'';let h=Number(m[1]),mi=Number(m[2]);if(m[4]==='PM'&&h<12)h+=12;if(m[4]==='AM'&&h===12)h=0;if(h<0||h>23||mi<0||mi>59)return'';const ap=h>=12?'PM':'AM',hh=h%12||12;return String(hh).padStart(2,'0')+':'+String(mi).padStart(2,'0')+' '+ap}"""
+          if not old_fmt: raise SystemExit('fmtClock not found')
+          s=s[:old_fmt.start()]+new_fmt+s[old_fmt.end():]
+
+          start=s.index('function parseBIOWorkbook(buf){')
+          end=s.index('\nfunction masterMap()', start)
+          new_parser=r'''function parseBIOWorkbook(buf){const wb=XLSX.read(buf,{type:'array',cellDates:false,raw:false});let out=[],reportYear=null,reportMonth=null;const mm={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};const cl=v=>String(v??'').replace(/\u00a0/g,' ').trim();const validYMD=(y,m,d)=>attendanceDateFromYMD(Number(y),Number(m),Number(d));const parseDateCell=v=>{if(v instanceof Date&&!Number.isNaN(v.getTime()))return attendanceDateFromYMD(v.getFullYear(),v.getMonth(),v.getDate());const x=cl(v);if(!x)return'';if(/^\d+(\.\d+)?$/.test(x)){const n=Number(x);if(n>20000){const z=XLSX.SSF.parse_date_code(n);if(z&&z.y&&z.m&&z.d)return validYMD(z.y,z.m-1,z.d)}}let m=x.match(/^(\d{4})[-\/]([A-Za-z]{3,9}|\d{1,2})[-\/](\d{1,2})$/);if(m){const mo=/^\d+$/.test(m[2])?Number(m[2])-1:mm[m[2].slice(0,3).toUpperCase()];return mo>=0&&mo<=11?validYMD(m[1],mo,m[3]):''}m=x.match(/^(\d{1,2})[-\/]([A-Za-z]{3,9})[-\/](\d{4})$/);if(m){const mo=mm[m[2].slice(0,3).toUpperCase()];return mo===undefined?'':validYMD(m[3],mo,m[1])}m=x.match(/^(\d{1,2})[-\/]([A-Za-z]{3,9})[-\/](\d{2})$/);if(m){const mo=mm[m[2].slice(0,3).toUpperCase()];return mo===undefined?'':validYMD(2000+Number(m[3]),mo,m[1])}return cleanDate(x)};const parseHeaderDate=(v)=>{const full=parseDateCell(v);if(full)return full;const x=cl(v);let m=x.match(/^(\d{1,2})\s*[-\/]\s*([A-Za-z]{3,9})$/);if(m){const mo=mm[m[2].slice(0,3).toUpperCase()];if(mo!==undefined&&reportYear!=null)return validYMD(reportYear,mo,m[1])}m=x.match(/^(\d{1,2})\s*[-\/]\s*(\d{1,2})$/);if(m&&reportYear!=null)return validYMD(reportYear,Number(m[2])-1,m[1]);if(/^\d{1,2}$/.test(x)&&reportYear!=null&&reportMonth!=null)return validYMD(reportYear,reportMonth,Number(x));return''};const dn=v=>{const x=cl(v);const m=x.match(/^(\d{1,2})\s*[-\/]\s*[A-Za-z]{3,9}$/);return m?+m[1]:null};
+          for(const sn of wb.SheetNames){const a=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:false});for(let r=0;r<Math.min(a.length,20);r++)for(const c of a[r]){const full=parseDateCell(c);if(full){const q=full.split('-');reportYear=reportYear??Number(q[0]);reportMonth=reportMonth??Number(q[1])-1}}for(let i=0;i<a.length;i++){const row=a[i]||[];let ei=row.findIndex(c=>cl(c).toUpperCase().includes('EMPLOYEE CODE'));if(ei<0)continue;let code='';for(let c=ei+1;c<row.length;c++)if(cl(row[c])){code=cl(row[c]);break}if(!code)continue;let dr=-1;for(let j=i+1;j<=i+3&&j<a.length;j++){const rr=a[j]||[];if(rr.filter(c=>parseHeaderDate(c)||dn(c)!=null).length>=5){dr=j;break}}if(dr<0)continue;const find=(start,labelText)=>{for(let j=start;j<=start+6&&j<a.length;j++)if((a[j]||[]).some(c=>cl(c).toUpperCase().includes(labelText)))return j;return-1};const sr=find(dr+1,'STATUS'),ir=find(dr+1,'IN TIME'),or=find(dr+1,'OUT TIME'),du=find(dr+1,'T DURATION');if(ir<0||or<0)continue;const days=a[dr]||[],stats=sr>=0?a[sr]||[]:[],ins=a[ir]||[],outs=a[or]||[],durs=du>=0?a[du]||[]:[];for(let c=0;c<days.length;c++){const date=parseHeaderDate(days[c]);if(!date)continue;out.push({DATE:date,'EMPLOYEE CODE':code,'STATUS':cl(stats[c]),'IN TIME':cl(ins[c]),'OUT TIME':cl(outs[c]),'T DURATION':cl(durs[c]),SHEET:sn})}}}if(!out.length)throw new Error('No BIO daily rows detected.');state.bioYear=reportYear;return out}'''
+          s=s[:start]+new_parser+s[end:]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Fix BIO 12-hour IST display and per-column date parsing'
+          git push
+      - name: Remove temporary workflow
+        if: always()
+        run: |
+          git rm -f .github/workflows/fix-bio-time-date.yml || true
+          git diff --cached --quiet || git commit -m 'Remove temporary BIO time date workflow'
+          git push || true
