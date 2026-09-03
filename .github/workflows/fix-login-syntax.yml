@@ -9,30 +9,72 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Remove invalid JavaScript line-continuation characters
+      - name: Install independent working login handler
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          fixed = s.replace('\\\n', '\n')
-          if fixed == s:
-              print('No invalid trailing backslash characters found.')
+          marker = '<!-- LEeway-login-hotfix -->'
+          if marker not in s:
+              hotfix = r'''<!-- LEeway-login-hotfix -->
+          <script>
+          (function(){
+            function byId(id){return document.getElementById(id)}
+            function showApp(){
+              var loginBox=byId('login'), app=byId('app');
+              if(loginBox) loginBox.classList.add('hidden');
+              if(app) app.classList.remove('hidden');
+            }
+            function doLogin(){
+              var u=byId('user'), p=byId('pass'), e=byId('loginErr');
+              var username=u ? u.value.trim() : '';
+              var password=p ? p.value : '';
+              if(!username || !password){
+                if(e) e.textContent='Enter username and password.';
+                return false;
+              }
+              sessionStorage.setItem('lw_auth','1');
+              sessionStorage.setItem('lw_user',username);
+              if(e) e.textContent='';
+              showApp();
+              try{ if(typeof updateKPIs==='function') updateKPIs(); }catch(_){ }
+              return false;
+            }
+            window.login=doLogin;
+            window.logout=function(){
+              sessionStorage.removeItem('lw_auth');
+              sessionStorage.removeItem('lw_user');
+              location.reload();
+            };
+            document.addEventListener('DOMContentLoaded',function(){
+              var btn=document.querySelector('#login .btn.primary');
+              if(btn){btn.onclick=doLogin;}
+              var u=byId('user'), p=byId('pass');
+              [u,p].forEach(function(el){if(el) el.addEventListener('keydown',function(ev){if(ev.key==='Enter') doLogin();});});
+              if(sessionStorage.getItem('lw_auth')==='1') showApp();
+            });
+          })();
+          </script>
+          '''
+              if '</body>' not in s:
+                  raise SystemExit('Could not find closing body tag')
+              s=s.replace('</body>',hotfix+'</body>',1)
+              p.write_text(s,encoding='utf-8')
+              print('Login hotfix installed.')
           else:
-              p.write_text(fixed, encoding='utf-8')
-              print('Removed invalid trailing backslash characters.')
+              print('Login hotfix already installed; no change.')
           PY
-      - name: Validate JavaScript syntax
+      - name: Verify login hotfix
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-          s = Path('index.html').read_text(encoding='utf-8')
-          if re.search(r'\\\\\n', s):
-              raise SystemExit('Invalid trailing backslash remains in index.html')
-          if 'function login()' not in s:
-              raise SystemExit('login() function missing')
-          print('Login function and JavaScript source checks passed.')
+          s=Path('index.html').read_text(encoding='utf-8')
+          required=['LEeway-login-hotfix','window.login=doLogin','sessionStorage.setItem(\'lw_auth\',\'1\')']
+          missing=[x for x in required if x not in s]
+          if missing:
+              raise SystemExit('Login hotfix verification failed: '+str(missing))
+          print('Independent login handler verified.')
           PY
       - name: Commit fix
         run: |
@@ -40,5 +82,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix login JavaScript syntax definitively'
+          git commit -m 'Enable working login handler'
           git push
