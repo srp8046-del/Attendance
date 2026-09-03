@@ -15,9 +15,9 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          # Remove the stray line-continuation immediately before the date helper.
+          # The broken patch inserted a literal backslash+n before the helper.
+          s=s.replace(chr(92)+'nfunction attendanceDateKey', 'function attendanceDateKey')
           s=s.replace(chr(92)+'\nfunction attendanceDateKey', 'function attendanceDateKey')
-          s=s.replace(chr(92)+'\r\nfunction attendanceDateKey', 'function attendanceDateKey')
           p.write_text(s,encoding='utf-8')
           print('Attendance JavaScript escape repaired.')
           PY
