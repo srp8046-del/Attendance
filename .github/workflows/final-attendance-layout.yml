@@ -24,6 +24,29 @@ jobs:
           python tools/dashboard_date_fix.py
           python tools/fix_status_shortcodes.py
           python tools/emergency_attendance_fix.py
+      - name: Repair JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          lines=s.splitlines()
+          out=[]
+          in_block=False
+          for line in lines:
+              if line.strip() == '\\':
+                  continue
+              if line.startswith('function attendanceDateKey(d){\\'):
+                  line=line.replace('{\\','{')
+              if line.startswith('function attendanceDateFromYMD(y,m,d){\\'):
+                  line=line.replace('{\\','{')
+              if line.startswith('function attendanceDateOnly(v){\\'):
+                  line=line.replace('{\\','{')
+              if line.strip().endswith('\\') and ('attendanceDateKey' in line or 'attendanceDateFromYMD' in line or 'attendanceDateOnly' in line or 'return attendanceDateKey' in line or 'return attendanceDateFromYMD' in line or 'parse_date_code' in line or 'const t=' in line or 'let m=' in line or "return '';" in line or line.strip()=='}\\'):
+                  line=line.rstrip('\\')
+              out.append(line)
+          p.write_text('\n'.join(out)+'\n',encoding='utf-8')
+          PY
       - name: Commit final fixes
         run: |
           git config user.name "github-actions[bot]"
@@ -32,6 +55,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Final attendance fixes already applied"
           else
-            git commit -m "Apply definitive final attendance layout and local dates"
+            git commit -m "Fix login JavaScript syntax"
             git push
           fi
