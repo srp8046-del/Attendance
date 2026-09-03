@@ -1,0 +1,83 @@
+name: Repair attendance JavaScript
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair malformed date helper
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          bad_start='function attendanceDateKey(d){n'
+          if bad_start in s:
+              start=s.index(bad_start)
+              end_marker="return ''; }n"
+              end=s.find(end_marker,start)
+              if end < 0:
+                  end_marker="return ''; }"
+                  end=s.find(end_marker,start)
+              if end < 0:
+                  raise SystemExit('Malformed date helper found but end marker was not found')
+              end += len(end_marker)
+              good="""function attendanceDateKey(d){
+            if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
+            return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          }
+          function attendanceDateFromYMD(y,m,d){
+            y=Number(y); m=Number(m); d=Number(d);
+            if(!Number.isInteger(y)||!Number.isInteger(m)||!Number.isInteger(d)||m<0||m>11||d<1) return '';
+            const x=new Date(y,m,d);
+            if(x.getFullYear()!==y || x.getMonth()!==m || x.getDate()!==d) return '';
+            return attendanceDateKey(x);
+          }
+          function attendanceDateOnly(v){
+            if(v instanceof Date) return attendanceDateKey(v);
+            if(typeof v==='number' && window.XLSX && XLSX.SSF){
+              const x=XLSX.SSF.parse_date_code(v);
+              if(x && x.y && x.m && x.d) return attendanceDateFromYMD(x.y,x.m-1,x.d);
+            }
+            const t=String(v??'').trim();
+            let m=t.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+            if(m) return attendanceDateFromYMD(m[1],Number(m[2])-1,m[3]);
+            m=t.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})$/);
+            if(m) return attendanceDateFromYMD(m[3],Number(m[2])-1,m[1]);
+            return '';
+          }"""
+              s=s[:start]+good+s[end:]
+              p.write_text(s,encoding='utf-8')
+              print('Malformed date helper repaired.')
+          else:
+              print('Date helper already valid; no repair needed.')
+          PY
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,flags=re.S|re.I)
+          errors=[]
+          for i,code in enumerate(scripts,1):
+              p=Path(f'/tmp/script{i}.js'); p.write_text(code,encoding='utf-8')
+              r=subprocess.run(['node','--check',str(p)],text=True,capture_output=True)
+              if r.returncode: errors.append(f'SCRIPT {i}: {r.stderr}')
+          if errors: raise SystemExit('\n'.join(errors))
+          print(f'Validated {len(scripts)} embedded scripts: all OK')
+          PY
+      - name: Remove temporary diagnostics and commit
+        run: |
+          rm -f syntax-report.txt .github/workflows/diagnose-js.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html syntax-report.txt .github/workflows/diagnose-js.yml
+          git diff --cached --quiet && exit 0
+          git commit -m 'Repair attendance JavaScript runtime'
+          git push
