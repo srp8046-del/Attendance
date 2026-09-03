@@ -9,13 +9,17 @@ create table if not exists public.user_profiles (
   designation text not null default '',
   employee_code text,
   manager_employee_code text,
-  role text not null default 'viewer' check (role in ('admin','manager','tele_sales_executive','viewer','uploader')),
+  role text not null default 'viewer' check (role in ('admin','manager','team_leader','tele_sales_executive','viewer','uploader')),
   can_view_all boolean not null default false,
   can_upload boolean not null default false,
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- If the table already exists, add the new role before using the updated UI.
+alter table public.user_profiles drop constraint if exists user_profiles_role_check;
+alter table public.user_profiles add constraint user_profiles_role_check check (role in ('admin','manager','team_leader','tele_sales_executive','viewer','uploader'));
 
 alter table public.user_profiles enable row level security;
 
@@ -36,7 +40,6 @@ as $$ select * from public.user_profiles where id=auth.uid() and active limit 1 
 
 grant execute on function public.my_profile() to authenticated;
 
--- Optional helper for managers: returns their own employee code from the profile.
 create or replace function public.my_access_scope()
 returns jsonb
 language sql stable security definer set search_path=public
