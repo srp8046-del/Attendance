@@ -1,0 +1,39 @@
+name: Apply attendance status rules
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch BIO/TOS final status logic
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="if(t&&t.min!=null){r.tosMin=t.min;r.tosStatus=statusByHours(t.min);r.finalStatus=sev[r.tosStatus]>sev[r.bioStatus]?r.tosStatus:r.bioStatus}else{r.tosMin=null;r.tosStatus='NOT PUNCHED';r.finalStatus=r.bioStatus}"
+          new="if(t&&t.min!=null){r.tosMin=t.min;r.tosStatus=statusByHours(t.min);r.finalStatus=(r.bioStatus==='NOT PUNCHED' && (r.tosStatus==='LATE'||r.tosStatus==='HALFDAY'))?r.tosStatus:(r.bioStatus==='NOT PUNCHED'?'NOT PUNCHED':(sev[r.tosStatus]>sev[r.bioStatus]?r.tosStatus:r.bioStatus))}else{r.tosMin=null;r.tosStatus='NOT PUNCHED';r.finalStatus=r.bioStatus}"
+          if old not in s:
+              raise SystemExit('Target attendance logic not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Fix BIO NP and TOS LC/HD final status"
+          git push
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          git rm .github/workflows/attendance-status-fix.yml
+          git commit -m "Remove temporary status fix workflow"
+          git push
