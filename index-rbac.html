@@ -8,7 +8,7 @@
 <body><div id="boot"><div>Loading Attendance Master…</div></div>
 <script>
 (async function(){
-const SOURCE='index.html';
+const SOURCE='app.html';
 const SUPABASE_URL='https://slsiwqvbdcdcgrkufsln.supabase.co';
 const SUPABASE_KEY='sb_publishable_dtWiemrqMQHEXN5SGLGnPw_VGs-ottO';
 const closeScript='<'+ '/script>';
@@ -16,63 +16,22 @@ try{
   const res=await fetch(SOURCE,{cache:'no-store'});
   if(!res.ok)throw Error('Could not load main application ('+res.status+').');
   let html=await res.text();
-
-  /* Keep the original application intact; only replace its legacy auth entry points. */
   html=html.replace(/function\s+login\s*\(/,'function legacyLogin(');
   html=html.replace(/function\s+logout\s*\(/,'function legacyLogout(');
   html=html.replace(/onclick\s*=\s*(["'])login\(\)\1/gi,'');
   html=html.replace(/onclick\s*=\s*(["'])logout\(\)\1/gi,'');
-
   html=html.replace('</head>','<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">'+closeScript+'</head>');
-
   const injected='<script>(function(){\'use strict\';\n'
   + 'const SB_URL='+JSON.stringify(SUPABASE_URL)+',SB_KEY='+JSON.stringify(SUPABASE_KEY)+';\n'
   + 'let sb=null,profile=null;\n'
   + 'const $=id=>document.getElementById(id);\n'
   + 'const msg=t=>{const e=$(\'loginErr\');if(e)e.textContent=t||\'\'};\n'
   + 'const email=u=>{const x=String(u||\'\').trim().toLowerCase();return x===\'admin\'?\'srp8046@gmail.com\':(x.includes(\'@\')?x:x+\'@login.leeway.local\')};\n'
-  + 'async function loadProfile(){\n'
-  + '  const {data:{user},error:ue}=await sb.auth.getUser();\n'
-  + '  if(ue||!user)throw Error(\'Session expired.\');\n'
-  + '  const {data,error}=await sb.rpc(\'my_profile\');\n'
-  + '  if(error)throw Error(\'Profile access failed: \'+error.message);\n'
-  + '  profile=Array.isArray(data)?data[0]:data;\n'
-  + '  if(!profile||profile.id!==user.id||profile.active!==true)throw Error(\'Account profile is missing or inactive.\');\n'
-  + '}\n'
-  + 'async function signIn(){\n'
-  + '  const u=$(\'user\')?.value.trim(),p=$(\'pass\')?.value||\'\';\n'
-  + '  if(!u||!p){msg(\'Enter username and password.\');return}\n'
-  + '  msg(\'Signing in…\');\n'
-  + '  try{\n'
-  + '    const {data,error}=await sb.auth.signInWithPassword({email:email(u),password:p});\n'
-  + '    if(error)throw Error(\'Authentication failed: \'+error.message);\n'
-  + '    await loadProfile();\n'
-  + '    sessionStorage.setItem(\'lw_auth\',\'1\');\n'
-  + '    sessionStorage.setItem(\'lw_user\',profile.username||u);\n'
-  + '    $(\'login\')?.classList.add(\'hidden\');\n'
-  + '    $(\'app\')?.classList.remove(\'hidden\');\n'
-  + '    msg(\'\');\n'
-  + '  }catch(e){\n'
-  + '    try{await sb.auth.signOut()}catch(_){}\n'
-  + '    sessionStorage.removeItem(\'lw_auth\');sessionStorage.removeItem(\'lw_user\');\n'
-  + '    msg(String(e.message||e));\n'
-  + '  }\n'
-  + '}\n'
+  + 'async function loadProfile(){const {data:{user},error:ue}=await sb.auth.getUser();if(ue||!user)throw Error(\'Session expired.\');const {data,error}=await sb.rpc(\'my_profile\');if(error)throw Error(\'Profile access failed: \'+error.message);profile=Array.isArray(data)?data[0]:data;if(!profile||profile.id!==user.id||profile.active!==true)throw Error(\'Account profile is missing or inactive.\');}\n'
+  + 'async function signIn(){const u=$(\'user\')?.value.trim(),p=$(\'pass\')?.value||\'\';if(!u||!p){msg(\'Enter username and password.\');return}msg(\'Signing in…\');try{const {data,error}=await sb.auth.signInWithPassword({email:email(u),password:p});if(error)throw Error(\'Authentication failed: \'+error.message);await loadProfile();sessionStorage.setItem(\'lw_auth\',\'1\');sessionStorage.setItem(\'lw_user\',profile.username||u);$(\'login\')?.classList.add(\'hidden\');$(\'app\')?.classList.remove(\'hidden\');msg(\'\')}catch(e){try{await sb.auth.signOut()}catch(_){}sessionStorage.removeItem(\'lw_auth\');sessionStorage.removeItem(\'lw_user\');msg(String(e.message||e))}}\n'
   + 'async function signOut(){try{await sb.auth.signOut()}catch(e){}sessionStorage.removeItem(\'lw_auth\');sessionStorage.removeItem(\'lw_user\');location.reload()}\n'
-  + 'async function boot(){\n'
-  + '  if(!window.supabase){setTimeout(boot,50);return}\n'
-  + '  sb=window.supabase.createClient(SB_URL,SB_KEY);\n'
-  + '  window.login=signIn;window.logout=signOut;\n'
-  + '  const b=$(\'login\')?.querySelector(\'.btn.primary\');\n'
-  + '  if(b){b.removeAttribute(\'onclick\');b.addEventListener(\'click\',e=>{e.preventDefault();e.stopImmediatePropagation();signIn()},{capture:true})}\n'
-  + '  try{\n'
-  + '    const {data:{session}}=await sb.auth.getSession();\n'
-  + '    if(session){await loadProfile();sessionStorage.setItem(\'lw_auth\',\'1\');sessionStorage.setItem(\'lw_user\',profile.username||\'\');$(\'login\')?.classList.add(\'hidden\');$(\'app\')?.classList.remove(\'hidden\')}\n'
-  + '    else{$(\'login\')?.classList.remove(\'hidden\');$(\'app\')?.classList.add(\'hidden\')}\n'
-  + '  }catch(e){try{await sb.auth.signOut()}catch(_){}sessionStorage.removeItem(\'lw_auth\');sessionStorage.removeItem(\'lw_user\');$(\'login\')?.classList.remove(\'hidden\');$(\'app\')?.classList.add(\'hidden\');msg(String(e.message||e))}\n'
-  + '}\n'
+  + 'async function boot(){if(!window.supabase){setTimeout(boot,50);return}sb=window.supabase.createClient(SB_URL,SB_KEY);window.login=signIn;window.logout=signOut;const b=$(\'login\')?.querySelector(\'.btn.primary\');if(b){b.removeAttribute(\'onclick\');b.addEventListener(\'click\',e=>{e.preventDefault();e.stopImmediatePropagation();signIn()},{capture:true})}const u=$(\'user\'),p=$(\'pass\');[u,p].forEach(el=>el&&el.addEventListener(\'keydown\',e=>{if(e.key===\'Enter\'){e.preventDefault();signIn()}}));try{const {data:{session}}=await sb.auth.getSession();if(session){await loadProfile();sessionStorage.setItem(\'lw_auth\',\'1\');sessionStorage.setItem(\'lw_user\',profile.username||\'\');$(\'login\')?.classList.add(\'hidden\');$(\'app\')?.classList.remove(\'hidden\')}else{$(\'login\')?.classList.remove(\'hidden\');$(\'app\')?.classList.add(\'hidden\')}}catch(e){try{await sb.auth.signOut()}catch(_){}sessionStorage.removeItem(\'lw_auth\');sessionStorage.removeItem(\'lw_user\');$(\'login\')?.classList.remove(\'hidden\');$(\'app\')?.classList.add(\'hidden\');msg(String(e.message||e))}}\n'
   + 'boot();})();'+closeScript;
-
   html=html.replace('</body>',injected+'</body>');
   document.open();document.write(html);document.close();
 }catch(e){document.getElementById('boot').innerHTML='<div><b>Attendance Master could not start.</b><br><small>'+String(e.message||e)+'</small></div>'}
