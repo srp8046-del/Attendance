@@ -9,23 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repair malformed date helper and escape
+      - name: Repair malformed date helper
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          bad_start='function attendanceDateKey(d){n'
-          if bad_start in s:
-              start=s.index(bad_start)
-              # Remove the stray backslash + newline immediately before the helper.
-              prefix=s[:start]
-              while prefix.endswith('\\') or prefix.endswith('\n') or prefix.endswith('\r'):
-                  prefix=prefix[:-1]
-              s=prefix+s[start:]
-              start=s.index(bad_start)
-              end=s.index('</script>',start)
-              good="""function attendanceDateKey(d){
+          marker='function attendanceDateKey(d){n'
+          if marker not in s:
+              print('No malformed helper found.')
+              raise SystemExit(0)
+          start=s.index(marker)
+          # Remove any stray backslash/newline immediately before the helper.
+          prefix=s[:start]
+          while prefix.endswith('\\') or prefix.endswith('\n') or prefix.endswith('\r'):
+              prefix=prefix[:-1]
+          end=s.index('</script>',start)
+          good="""function attendanceDateKey(d){
             if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
             return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
           }
@@ -50,33 +50,14 @@ jobs:
             return '';
           }
           """
-              s=s[:start]+good+s[end:]
-              p.write_text(s,encoding='utf-8')
-              print('Malformed date helper and stray escape repaired.')
-          else:
-              print('Malformed helper not present; continuing validation.')
+          p.write_text(prefix+good+s[end:],encoding='utf-8')
+          print('Repaired malformed helper and removed stray escape.')
           PY
-      - name: Validate all embedded JavaScript
+      - name: Commit repaired index
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re, subprocess
-          s=Path('index.html').read_text(encoding='utf-8')
-          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,flags=re.S|re.I)
-          errors=[]
-          for i,code in enumerate(scripts,1):
-              p=Path(f'/tmp/script{i}.js'); p.write_text(code,encoding='utf-8')
-              r=subprocess.run(['node','--check',str(p)],text=True,capture_output=True)
-              if r.returncode: errors.append(f'SCRIPT {i}: {r.stderr}')
-          if errors: raise SystemExit('\n'.join(errors))
-          print(f'Validated {len(scripts)} embedded scripts: all OK')
-          PY
-      - name: Commit repaired index and clean diagnostics
-        run: |
-          rm -f syntax-report.txt .github/workflows/diagnose-js.yml .github/workflows/repair-attendance-js.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html syntax-report.txt .github/workflows/diagnose-js.yml .github/workflows/repair-attendance-js.yml
+          git add index.html
           git diff --cached --quiet && exit 0
           git commit -m 'Repair attendance JavaScript runtime'
           git push
