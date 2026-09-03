@@ -17,12 +17,13 @@ jobs:
         run: |
           python tools/fix_ui.py
           python tools/fix_bio.py
-      - name: Apply final attendance layout and date fix
+      - name: Apply attendance fixes
         run: |
           python tools/final_attendance_layout.py
           python tools/date_fix.py
           python tools/dashboard_date_fix.py
           python tools/fix_status_shortcodes.py
+          python tools/emergency_attendance_fix.py
       - name: Commit final fixes
         run: |
           git config user.name "github-actions[bot]"
@@ -31,6 +32,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Final attendance fixes already applied"
           else
-            git commit -m "Apply attendance status shortcuts everywhere"
+            git commit -m "Apply definitive final attendance layout and local dates"
             git push
           fi
