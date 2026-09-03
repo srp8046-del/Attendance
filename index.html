@@ -83,7 +83,7 @@ function exportCSV(){if(!state.records.length){toast('No attendance data');retur
 function exportFinalCSV(){if(!state.master.length){toast('Employee Master not loaded');return}const cols=masterColumns(),dates=[...new Set(state.records.map(r=>r.date))].sort(),rows=[[...cols,...dates]];state.master.forEach(e=>{const recs=findEmployeeRecords(e),byDate={};recs.forEach(r=>byDate[r.date]=r.finalStatus);rows.push([...cols.map(k=>e[k]||''),...dates.map(d=>displayStatus(byDate[d]||'NOT PUNCHED'))])});downloadCSV('leeway_final_attendance.csv',rows)}
 function downloadCSV(name,rows){const csv='\ufeff'+rows.map(a=>a.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 updateKPIs();updateFileState();
-\nfunction attendanceDateKey(d){
+function attendanceDateKey(d){
   if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
