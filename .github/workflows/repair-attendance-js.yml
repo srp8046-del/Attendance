@@ -20,7 +20,6 @@ jobs:
               print('No malformed helper found.')
               raise SystemExit(0)
           start=s.index(marker)
-          # Remove any stray backslash/newline immediately before the helper.
           prefix=s[:start]
           while prefix.endswith('\\') or prefix.endswith('\n') or prefix.endswith('\r'):
               prefix=prefix[:-1]
@@ -51,13 +50,14 @@ jobs:
           }
           """
           p.write_text(prefix+good+s[end:],encoding='utf-8')
-          print('Repaired malformed helper and removed stray escape.')
+          print('Repaired malformed helper and stray escape.')
           PY
-      - name: Commit repaired index
+      - name: Commit repaired index and clean trigger
         run: |
+          rm -f REPAIR_TRIGGER.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html
+          git add index.html REPAIR_TRIGGER.txt
           git diff --cached --quiet && exit 0
           git commit -m 'Repair attendance JavaScript runtime'
           git push
