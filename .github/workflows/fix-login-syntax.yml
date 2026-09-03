@@ -9,22 +9,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install independent working login handler
+      - name: Install robust login handler
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          marker = '<!-- LEeway-login-hotfix -->'
-          if marker not in s:
-              hotfix = r'''<!-- LEeway-login-hotfix -->
+          hotfix = r'''<!-- LEeway-login-hotfix -->
           <script>
           (function(){
-            function byId(id){return document.getElementById(id)}
+            function byId(id){return document.getElementById(id);}
             function showApp(){
               var loginBox=byId('login'), app=byId('app');
               if(loginBox) loginBox.classList.add('hidden');
               if(app) app.classList.remove('hidden');
+            }
+            function storageSet(k,v){try{sessionStorage.setItem(k,v);}catch(_){}}
+            function storageGet(k){try{return sessionStorage.getItem(k);}catch(_){return null;}}
+            function storageRemove(k){try{sessionStorage.removeItem(k);}catch(_){}
             }
             function doLogin(){
               var u=byId('user'), p=byId('pass'), e=byId('loginErr');
@@ -34,47 +37,52 @@ jobs:
                 if(e) e.textContent='Enter username and password.';
                 return false;
               }
-              sessionStorage.setItem('lw_auth','1');
-              sessionStorage.setItem('lw_user',username);
               if(e) e.textContent='';
               showApp();
+              storageSet('lw_auth','1');
+              storageSet('lw_user',username);
               try{ if(typeof updateKPIs==='function') updateKPIs(); }catch(_){ }
               return false;
             }
             window.login=doLogin;
             window.logout=function(){
-              sessionStorage.removeItem('lw_auth');
-              sessionStorage.removeItem('lw_user');
+              storageRemove('lw_auth');
+              storageRemove('lw_user');
               location.reload();
             };
-            document.addEventListener('DOMContentLoaded',function(){
+            function bind(){
               var btn=document.querySelector('#login .btn.primary');
-              if(btn){btn.onclick=doLogin;}
+              if(btn) btn.onclick=doLogin;
               var u=byId('user'), p=byId('pass');
-              [u,p].forEach(function(el){if(el) el.addEventListener('keydown',function(ev){if(ev.key==='Enter') doLogin();});});
-              if(sessionStorage.getItem('lw_auth')==='1') showApp();
-            });
+              [u,p].forEach(function(el){
+                if(el) el.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();doLogin();}});
+              });
+              if(storageGet('lw_auth')==='1') showApp();
+            }
+            if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
           })();
           </script>
           '''
+          pattern = r'<!-- LEeway-login-hotfix -->.*?</script>\s*(?=</body>)'
+          if re.search(pattern, s, flags=re.S):
+              s = re.sub(pattern, hotfix.rstrip(), s, count=1, flags=re.S)
+          else:
               if '</body>' not in s:
                   raise SystemExit('Could not find closing body tag')
-              s=s.replace('</body>',hotfix+'</body>',1)
-              p.write_text(s,encoding='utf-8')
-              print('Login hotfix installed.')
-          else:
-              print('Login hotfix already installed; no change.')
+              s = s.replace('</body>', hotfix + '</body>', 1)
+          p.write_text(s, encoding='utf-8')
+          print('Robust login handler installed.')
           PY
-      - name: Verify login hotfix
+      - name: Verify login handler
         run: |
           python - <<'PY'
           from pathlib import Path
           s=Path('index.html').read_text(encoding='utf-8')
-          required=['LEeway-login-hotfix','window.login=doLogin','sessionStorage.setItem(\'lw_auth\',\'1\')']
+          required=['LEeway-login-hotfix','window.login=doLogin','function storageSet','showApp();']
           missing=[x for x in required if x not in s]
           if missing:
-              raise SystemExit('Login hotfix verification failed: '+str(missing))
-          print('Independent login handler verified.')
+              raise SystemExit('Login verification failed: '+str(missing))
+          print('Robust login handler verified.')
           PY
       - name: Commit fix
         run: |
@@ -82,5 +90,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Enable working login handler'
+          git commit -m 'Harden attendance sign-in handler'
           git push
