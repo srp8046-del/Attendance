@@ -1,15 +1,5 @@
 SCRIPT 1: OK
 
-SCRIPT 2: ERROR
-/tmp/script2.js:66
-\nfunction attendanceDateKey(d){
-^
-
-SyntaxError: Invalid or unexpected token
-    at wrapSafe (node:internal/modules/cjs/loader:1713:18)
-    at checkSyntax (node:internal/main/check_syntax:78:3)
-
-Node.js v22.23.2
-
+SCRIPT 2: OK
 
 SCRIPT 3: OK
