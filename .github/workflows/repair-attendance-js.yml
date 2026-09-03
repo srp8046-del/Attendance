@@ -20,6 +20,9 @@ jobs:
               print('Date helper already repaired; nothing to do.')
           else:
               start=s.index(bad_start)
+              if start>=2 and s[start-2:start]=='\\\n':
+                  s=s[:start-2]+s[start:]
+                  start=s.index(bad_start)
               end=s.index('</script>',start)
               good="""function attendanceDateKey(d){
             if(!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
