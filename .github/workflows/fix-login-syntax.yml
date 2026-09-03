@@ -15,7 +15,6 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          # The broken patch inserted a literal backslash+n before the helper.
           s=s.replace(chr(92)+'nfunction attendanceDateKey', 'function attendanceDateKey')
           s=s.replace(chr(92)+'\nfunction attendanceDateKey', 'function attendanceDateKey')
           p.write_text(s,encoding='utf-8')
@@ -100,11 +99,11 @@ jobs:
           if errors: raise SystemExit('\n'.join(errors))
           print(f'Validated {len(scripts)} embedded scripts: all OK')
           PY
-      - name: Commit fix
+      - name: Commit fix on latest main
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git rebase origin/main
           git add index.html
           git diff --cached --quiet && exit 0
           git commit -m 'Repair attendance runtime and sign-in'
-          git push
+          git push origin HEAD:main
