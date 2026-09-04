@@ -1,12 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+  'Access-Control-Allow-Origin': 'https://srp8046-del.github.io',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Vary': 'Origin'
 };
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method !== 'POST') return new Response(JSON.stringify({ ok:false, error:'Method not allowed' }), { headers:{...cors,'Content-Type':'application/json'}, status:405 });
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -37,6 +40,10 @@ Deno.serve(async (req) => {
     if (password.length < 8) throw new Error('Password must be at least 8 characters.');
     if (!['admin','manager','team_leader','tele_sales_executive','viewer','uploader'].includes(role)) throw new Error('Invalid role');
     if (!display_name) throw new Error('Display name is required');
+    if (role === 'tele_sales_executive' && (can_view_all || can_upload)) throw new Error('TSE cannot have all-data or upload access.');
+    if (role === 'viewer' && can_upload) throw new Error('Viewer / MIS cannot have upload access.');
+    if (role === 'uploader' && !can_upload) throw new Error('Uploader must have upload access.');
+    if (['manager','team_leader','tele_sales_executive'].includes(role) && can_view_all) throw new Error('Hierarchy roles cannot be granted organization-wide access.');
 
     const email = `${username}@login.leeway.local`;
     const { data: created, error: createError } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
